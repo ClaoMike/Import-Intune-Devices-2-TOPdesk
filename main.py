@@ -2,6 +2,7 @@
 
 from utils import make_request, RequestType
 from env_variables import *
+import time
 
 def get_access_token():
     response = make_request(
@@ -74,8 +75,6 @@ def get_topdesk_user_id_by_mainframe(user_id):
         }
     )
 
-    # print(topdesk_person)
-
     try:
         if topdesk_person[0].get('status') != 'personArchived':
             return topdesk_person[0].get('id')
@@ -98,11 +97,22 @@ def assign_user_to_asset(asset_id, topdesk_person_id):
 
     return response
 
+# get the intune access token, it lasts for 3599 seconds, so we have to re0get it if an hour passes
 access_token = get_access_token()
+start_time = time.time()
 
 device_count=1
 url = "https://graph.microsoft.com/v1.0/devices"
 while url:
+    # see if you need a new access token
+    end_time = time.time()
+    elapsed_seconds = end_time - start_time
+
+    if elapsed_seconds > 3000:
+        access_token = get_access_token()
+        start_time = time.time()
+
+    # get devices from the current page
     response = get_devices_from_curren_page(url, access_token)
 
     devices = response['value']

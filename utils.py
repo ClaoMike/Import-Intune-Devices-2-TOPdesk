@@ -28,7 +28,7 @@ def evaluateResponse(response: Response):
     """
 
     if 200 <= response.status_code < 300:
-        print(f"Request was successful! Status code: {response.status_code}")
+        return
     else:
         error_message = f"Error {response.status_code}: {response.text}"
         raise ValueError(error_message)
