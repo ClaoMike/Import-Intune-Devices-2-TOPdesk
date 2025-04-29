@@ -2,13 +2,12 @@
 from utils import make_request, RequestType
 from env_variables import *
 
-page_start = 0
 page_size = 500
-
 asset_counter = 1
 
 removable_assets_categories = [topdesk_computer_category_id, topdesk_mobile_category_id]
 for removable_asset_category in removable_assets_categories:
+    page_start = 0
     while True:
         response = make_request(
             request_type=RequestType.GET,
