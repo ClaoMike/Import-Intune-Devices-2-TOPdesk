@@ -9,5 +9,7 @@ client_id = os.getenv("CLIENT_ID")
 client_secret = os.getenv("CLIENT_SECRET")
 
 topdesk_username = os.getenv("TOPDESK_USERNAME")
-topdesk_password = os.getenv("topdesk_password")
-topdesk_devices_category_id = os.getenv("topdesk_devices_category_id")
+topdesk_password = os.getenv("TOPDESK_PASSWORD")
+
+topdesk_computer_category_id = os.getenv("TOPDESK_COMPUTER_CATEGORY_ID")
+topdesk_mobile_category_id = os.getenv("TOPDESK_MOBILE_CATEGORY_ID")

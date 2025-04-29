@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 
-from utils import make_request, RequestType
+from utils import make_request, RequestType, DeviceType
 from env_variables import *
 import time
+import json
 
 def get_access_token():
     response = make_request(
@@ -31,7 +32,12 @@ def get_devices_from_curren_page(url, access_token):
         },
     )
 
-def create_device_asset(name: str):
+def create_device_asset(device_type: DeviceType, name: str):
+    if device_type == DeviceType.COMPUTER:
+        category_key = topdesk_computer_category_id
+    if device_type == DeviceType.MOBILE:
+        category_key = topdesk_mobile_category_id
+
     response = make_request(
         request_type=RequestType.POST,
         url="https://dlfseeds.topdesk.net/tas/api/assetmgmt/assets",
@@ -41,7 +47,7 @@ def create_device_asset(name: str):
         },
         json={
             "name": name, # ,
-            "type_id": topdesk_devices_category_id,
+            "type_id": category_key,
             "assignmentWidget": {
                 "assignPerson": "8bee9359-678b-43ca-a060-9b101b7bad6c"
             }
@@ -97,7 +103,24 @@ def assign_user_to_asset(asset_id, topdesk_person_id):
 
     return response
 
-# get the intune access token, it lasts for 3599 seconds, so we have to re0get it if an hour passes
+skip_os = {
+    'Unknown',
+    'AndroidForWork',
+}
+
+computer_os = {
+    'Windows',
+    'MacMDM',
+    'MacOS',
+}
+
+mobile_os = {
+    'Android',
+    'iOS',
+    'AndroidEnterprise',
+}
+
+# get the intune access token, it lasts for 3599 seconds, so we have to re-get it if an hour passes
 access_token = get_access_token()
 start_time = time.time()
 
@@ -118,32 +141,42 @@ while url:
     devices = response['value']
     for device in devices:
 
-        # skip devices with unknown OS
-        if device.get('operatingSystem') == 'Unknown':
-            print(f"Skipping unknown OS device: {device.get('id')}")
+        if device.get('operatingSystem') in skip_os: # Skip these
+            continue
+        elif device.get('operatingSystem') in computer_os:
+            device_as_topdesk_asset = create_device_asset(DeviceType.COMPUTER, device["id"]) # create the TOPdesk Computer asset using the device ID only
+        elif device.get('operatingSystem') in mobile_os:
+            device_as_topdesk_asset = create_device_asset(DeviceType.MOBILE, device["id"]) # create the TOPdesk Mobile asset using the device ID only
+        else:
+            print("New OS detected - please take action")
+
+        print(f"{device_count}. ID: {device.get('id')} OS: {device.get('operatingSystem')} - Name: {device.get('displayName')} ")
+        device_count += 1
+
+        # if we try to create an asset, and it already exists
+        # we skip it
+        # this will be None, only if we get a 400 Asset already exists
+        if device_as_topdesk_asset.get('data') is None:
             continue
 
-        print(f"{device_count}. OS: {device.get('operatingSystem')} - Manufacturer: {device.get('manufacturer')} ")
-
-        # device_as_topdesk_asset = create_device_asset(device["id"]) # create the TOPdesk Device asset using the device ID only
-        # asset_id = device_as_topdesk_asset.get('data').get('unid') # save teh newly created asset ID
+        asset_id = device_as_topdesk_asset.get('data').get('unid') # save the newly created asset ID
 
         # print(f"TOPdesk asset's ID: {asset_id}")
 
         # get the ID of the user that uses the device;
         # This is the same as a persons' mainframe ID, stored in TOPdesk person cards
-        # user_id = get_device_user(access_token, device["id"])
+        user_id = get_device_user(access_token, device["id"])
 
-        # if user_id is not None:
+        if user_id is not None:
             # print(f"User ID: {user_id}")
 
-            # topdesk_person_id = get_topdesk_user_id_by_mainframe(user_id) # get the TOPdesk person card, searching by the above mainframe
+            topdesk_person_id = get_topdesk_user_id_by_mainframe(user_id) # get the TOPdesk person card, searching by the above mainframe
 
-            # if topdesk_person_id is not None:
+            if topdesk_person_id is not None:
                 # print(f"Person card in TOPdesk ID: {topdesk_person_id}")
 
-                # assign_user_to_asset(asset_id, topdesk_person_id) # if the person card is found, attach the asset to it
+                assign_user_to_asset(asset_id, topdesk_person_id) # if the person card is found, attach the asset to it
 
-        device_count += 1
+        # device_count += 1
 
     url = response.get('@odata.nextLink')

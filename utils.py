@@ -1,20 +1,23 @@
 import requests
 from enum import Enum
 from requests import Response
+import json
 
 class RequestType(Enum):
     """
         Enum representing the types of HTTP requests supported by the TOPdesk API.
-
-        Attributes:
-            POST: Represents an HTTP POST request (used for creating resources).
-            PATCH: Represents an HTTP PATCH request (used for updating resources partially).
-            PUT: Represents an HTTP PUT request (used for updating or replacing resources).
     """
     POST = "POST"
     PATCH = "PATCH"
     PUT = "PUT"
     GET = "GET"
+
+class DeviceType(Enum):
+    """
+        Enum representing the types of devices.
+    """
+    COMPUTER = "COMPUTER"
+    MOBILE = "MOBILE"
 
 def evaluateResponse(response: Response):
     """
@@ -29,6 +32,15 @@ def evaluateResponse(response: Response):
 
     if 200 <= response.status_code < 300:
         return
+    elif response.status_code == 400:
+        try:
+            response_text_as_json = json.loads(response.text)
+            error_text = response_text_as_json.get('errors')[0]
+            if error_text.get('fieldName') == 'name' and error_text.get('fieldTitle') == 'Asset ID' and error_text.get('message') == 'This ID is already in use.':
+                return
+        except:
+            error_message = f"Error {response.status_code}: {response.text}"
+            raise ValueError(error_message)
     else:
         error_message = f"Error {response.status_code}: {response.text}"
         raise ValueError(error_message)
