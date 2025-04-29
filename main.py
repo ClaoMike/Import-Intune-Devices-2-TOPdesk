@@ -117,26 +117,32 @@ while url:
 
     devices = response['value']
     for device in devices:
-        # print(str(device_count) + ". " + str(device))
-        device_count += 1
 
-        # create the TOPdesk asset
-        device_as_topdesk_asset = create_device_asset(device["id"])
-        asset_id = device_as_topdesk_asset.get('data').get('unid')
+        # skip devices with unknown OS
+        if device.get('operatingSystem') == 'Unknown':
+            print(f"Skipping unknown OS device: {device.get('id')}")
+            continue
+
+        print(f"{device_count}. OS: {device.get('operatingSystem')} - Manufacturer: {device.get('manufacturer')} ")
+
+        # device_as_topdesk_asset = create_device_asset(device["id"]) # create the TOPdesk Device asset using the device ID only
+        # asset_id = device_as_topdesk_asset.get('data').get('unid') # save teh newly created asset ID
+
         # print(f"TOPdesk asset's ID: {asset_id}")
 
-        # get the device's user id from Intune (the mainframe in TOPdesk)
-        user_id = get_device_user(access_token, device["id"])
+        # get the ID of the user that uses the device;
+        # This is the same as a persons' mainframe ID, stored in TOPdesk person cards
+        # user_id = get_device_user(access_token, device["id"])
 
-        if user_id is not None:
+        # if user_id is not None:
             # print(f"User ID: {user_id}")
 
-            topdesk_person_id = get_topdesk_user_id_by_mainframe(user_id)
+            # topdesk_person_id = get_topdesk_user_id_by_mainframe(user_id) # get the TOPdesk person card, searching by the above mainframe
 
-            if topdesk_person_id is not None:
+            # if topdesk_person_id is not None:
                 # print(f"Person card in TOPdesk ID: {topdesk_person_id}")
 
-                assign_user_to_asset(asset_id, topdesk_person_id)
+                # assign_user_to_asset(asset_id, topdesk_person_id) # if the person card is found, attach the asset to it
 
         device_count += 1
 

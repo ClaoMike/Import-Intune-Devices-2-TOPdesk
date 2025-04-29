@@ -62,7 +62,7 @@ def make_request(request_type: RequestType, url: str, headers, data=None, auth=N
         request_params["params"] = params
 
     # Log the request attempt
-    print(f"Performing a {request_type.value} request at {request_params['url']}")
+    # print(f"Performing a {request_type.value} request at {request_params['url']}")
 
     # Perform the appropriate HTTP request based on the request type
     if request_type == RequestType.GET:
