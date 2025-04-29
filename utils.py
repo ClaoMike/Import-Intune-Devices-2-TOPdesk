@@ -36,6 +36,7 @@ def evaluateResponse(response: Response):
         try:
             response_text_as_json = json.loads(response.text)
             error_text = response_text_as_json.get('errors')[0]
+
             if error_text.get('fieldName') == 'name' and error_text.get('fieldTitle') == 'Asset ID' and error_text.get('message') == 'This ID is already in use.':
                 return
         except:

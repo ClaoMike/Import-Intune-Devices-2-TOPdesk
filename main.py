@@ -32,11 +32,15 @@ def get_devices_from_curren_page(url, access_token):
         },
     )
 
-def create_device_asset(device_type: DeviceType, name: str):
+def create_device_asset(device_type: DeviceType, device):
     if device_type == DeviceType.COMPUTER:
         category_key = topdesk_computer_category_id
+        name = device.get('displayName')
     if device_type == DeviceType.MOBILE:
         category_key = topdesk_mobile_category_id
+        name = device.get('id')
+
+    print(f"{device_type.value}-{name}")
 
     response = make_request(
         request_type=RequestType.POST,
@@ -46,7 +50,7 @@ def create_device_asset(device_type: DeviceType, name: str):
             'Content-Type': 'application/json'
         },
         json={
-            "name": name, # ,
+            "name": f"{device_type.value}-{name}",
             "type_id": category_key,
             "assignmentWidget": {
                 "assignPerson": "8bee9359-678b-43ca-a060-9b101b7bad6c"
@@ -106,12 +110,12 @@ def assign_user_to_asset(asset_id, topdesk_person_id):
 skip_os = {
     'Unknown',
     'AndroidForWork',
+    'MacMDM',
+    'MacOS',
 }
 
 computer_os = {
     'Windows',
-    'MacMDM',
-    'MacOS',
 }
 
 mobile_os = {
@@ -144,9 +148,9 @@ while url:
         if device.get('operatingSystem') in skip_os: # Skip these
             continue
         elif device.get('operatingSystem') in computer_os:
-            device_as_topdesk_asset = create_device_asset(DeviceType.COMPUTER, device["id"]) # create the TOPdesk Computer asset using the device ID only
+            device_as_topdesk_asset = create_device_asset(DeviceType.COMPUTER, device) # create the TOPdesk Computer asset using the device ID only
         elif device.get('operatingSystem') in mobile_os:
-            device_as_topdesk_asset = create_device_asset(DeviceType.MOBILE, device["id"]) # create the TOPdesk Mobile asset using the device ID only
+            device_as_topdesk_asset = create_device_asset(DeviceType.MOBILE, device) # create the TOPdesk Mobile asset using the device ID only
         else:
             print("New OS detected - please take action")
 
@@ -157,6 +161,7 @@ while url:
         # we skip it
         # this will be None, only if we get a 400 Asset already exists
         if device_as_topdesk_asset.get('data') is None:
+            print(f"This ID is already in use: {device.get('id')}")
             continue
 
         asset_id = device_as_topdesk_asset.get('data').get('unid') # save the newly created asset ID
@@ -165,17 +170,17 @@ while url:
 
         # get the ID of the user that uses the device;
         # This is the same as a persons' mainframe ID, stored in TOPdesk person cards
-        user_id = get_device_user(access_token, device["id"])
-
-        if user_id is not None:
-            # print(f"User ID: {user_id}")
-
-            topdesk_person_id = get_topdesk_user_id_by_mainframe(user_id) # get the TOPdesk person card, searching by the above mainframe
-
-            if topdesk_person_id is not None:
-                # print(f"Person card in TOPdesk ID: {topdesk_person_id}")
-
-                assign_user_to_asset(asset_id, topdesk_person_id) # if the person card is found, attach the asset to it
+        # user_id = get_device_user(access_token, device["id"])
+        #
+        # if user_id is not None:
+        #     # print(f"User ID: {user_id}")
+        #
+        #     topdesk_person_id = get_topdesk_user_id_by_mainframe(user_id) # get the TOPdesk person card, searching by the above mainframe
+        #
+        #     if topdesk_person_id is not None:
+        #         # print(f"Person card in TOPdesk ID: {topdesk_person_id}")
+        #
+        #         assign_user_to_asset(asset_id, topdesk_person_id) # if the person card is found, attach the asset to it
 
         # device_count += 1
 
