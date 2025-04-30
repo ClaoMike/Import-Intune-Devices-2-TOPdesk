@@ -1,12 +1,12 @@
 skip_os = {
     'Unknown',
     'AndroidForWork',
-    'MacMDM',
-    'MacOS',
 }
 
 computer_os = {
     'Windows',
+    'MacMDM',
+    'MacOS',
 }
 
 mobile_os = {

@@ -247,9 +247,9 @@ def create_device_asset(device_type: DeviceType, dvc):
             "model-1": dvc.get("model"),
             "operating-system": dvc.get('operatingSystem'),
             "os-version": dvc.get("osVersion"),
-            # enrolledDateTime
-            # lastSyncDateTime
-            # managementCertificateExpirationDate
+            "enrollment-date": dvc.get("enrolledDateTime"),
+            "last-check-in": dvc.get("lastSyncDateTime"),
+            "management-certificate-expiration-date": dvc.get("managementCertificateExpirationDate"),
             "ismanaged": dvc.get("isSupervised"),
             "imei": dvc.get("imei"),
             "encrypted": dvc.get("isEncrypted"),
