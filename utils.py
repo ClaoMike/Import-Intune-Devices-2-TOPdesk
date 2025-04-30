@@ -235,13 +235,33 @@ def create_device_asset(device_type: DeviceType, dvc):
             'Content-Type': 'application/json'
         },
         json={
-            "name": f"{device_type.value}-{name}",
-            "type_id": category_key,
-            "assignmentWidget": {
-                "assignPerson": "8bee9359-678b-43ca-a060-9b101b7bad6c"
-            }
+            "name": f"{device_type.value}-{name}", # asset id
+            "type_id": category_key, # asset template
+
+            "intune-id": dvc.get("id"), # Intune ID
+            "azure-ad-registered": dvc.get("azureADRegistered"),
+            "azure-id": dvc.get("azureADDeviceId"), # azure ID
+            "serial-number": dvc.get("serialNumber"),
+            "name-1": dvc.get("deviceName"),
+            "manufacturer-1": dvc.get("manufacturer"),
+            "model-1": dvc.get("model"),
+            "operating-system": dvc.get('operatingSystem'),
+            "os-version": dvc.get("osVersion"),
+            # enrolledDateTime
+            # lastSyncDateTime
+            # managementCertificateExpirationDate
+            "ismanaged": dvc.get("isSupervised"),
+            "imei": dvc.get("imei"),
+            "encrypted": dvc.get("isEncrypted"),
+            "subscriber-carrier": dvc.get("subscriberCarrier"),
+            "total-storage": dvc.get("totalStorageSpaceInBytes"),
+            "storage": dvc.get("freeStorageSpaceInBytes"),
+            "compliance-status": dvc.get("complianceState"),
+            "ownership": dvc.get("managedDeviceOwnerType"),
         }
     )
+
+    print(response)
 
     if validate_topdesk_asset(response):
         topdesk_id = response.get('data').get('unid')
