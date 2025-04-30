@@ -34,9 +34,13 @@ def get_devices_from_curren_page(url, access_token):
     return response.get('value'), response.get('@odata.nextLink')
 
 def create_device_asset(device_type: DeviceType, device):
+    if device_type == None:
+        return None
+
     if device_type == DeviceType.COMPUTER:
         category_key = topdesk_computer_category_id
         name = device.get('displayName')
+
     if device_type == DeviceType.MOBILE:
         category_key = topdesk_mobile_category_id
         name = device.get('id')
@@ -121,6 +125,27 @@ def assign_user_to_asset(device, asset_id, tkn):
 
             return response
 
+def get_device_type(os: str):
+    if os in skip_os:  # Skip these
+        return None
+    elif os in computer_os:
+        return DeviceType.COMPUTER
+    elif os in mobile_os:
+        return DeviceType.MOBILE
+    else:
+        print("New OS detected - please take action")
+        return None
+
+def validate_topdesk_asset(asset):
+    if asset is None:  # no device created, thus we move to the next one
+        return False
+
+    if asset.get('data') is None:  # if no data here, it means it must be an accepted error
+        print("No data for this device, check for errors!")
+        return False
+
+    return True
+
 skip_os = {
     'Unknown',
     'AndroidForWork',
@@ -157,24 +182,11 @@ while current_page_of_devices_url:
     devices, current_page_of_devices_url = get_devices_from_curren_page(current_page_of_devices_url, access_token)
 
     for device in devices:
-
-        if device.get('operatingSystem') in skip_os: # Skip these
-            continue
-        elif device.get('operatingSystem') in computer_os:
-            device_as_topdesk_asset = create_device_asset(DeviceType.COMPUTER, device) # create the TOPdesk Computer asset using the device ID only
-        elif device.get('operatingSystem') in mobile_os:
-            device_as_topdesk_asset = create_device_asset(DeviceType.MOBILE, device) # create the TOPdesk Mobile asset using the device ID only
-        else:
-            print("New OS detected - please take action")
-
         print(f"{device_count}. ID: {device.get('id')} OS: {device.get('operatingSystem')} - Name: {device.get('displayName')} ")
-        device_count += 1
 
-        # if we try to create an asset, and it already exists
-        # we skip it
-        # this will be None, only if we get a 400 Asset already exists
-        if device_as_topdesk_asset.get('data') is None:
-            print(f"This ID is already in use: {device.get('id')}")
+        device_as_topdesk_asset = create_device_asset(get_device_type(device.get('operatingSystem')), device)
+
+        if not validate_topdesk_asset(device_as_topdesk_asset):
             continue
 
         asset_id = device_as_topdesk_asset.get('data').get('unid') # save the newly created asset ID
@@ -183,3 +195,5 @@ while current_page_of_devices_url:
 
         # if the person card is found, attach the asset to it
         assign_user_to_asset(device=device, asset_id=asset_id, tkn=access_token)
+
+        device_count += 1
