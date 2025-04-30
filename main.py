@@ -91,21 +91,34 @@ def get_topdesk_user_id_by_mainframe(user_id):
     except:
         return None
 
-def assign_user_to_asset(asset_id, topdesk_person_id):
-    response = make_request(
-        request_type=RequestType.PUT,
-        url=f"https://dlfseeds.topdesk.net/tas/api/assetmgmt/assets/{asset_id}/assignments",
-        auth=(topdesk_username, topdesk_password),
-        headers={
-            'Content-Type': 'application/json'
-        },
-        json={
-            "linkToId": topdesk_person_id,
-            "linkType": "person"
-        }
-    )
+def assign_user_to_asset(device, asset_id, tkn):
+    # get the ID of the user that uses the device;
+    # This is the same as a persons' mainframe ID, stored in TOPdesk person cards
+    user_id = get_device_user(tkn, device["id"])
 
-    return response
+    if user_id is not None:
+        #     # print(f"User ID: {user_id}")
+
+        topdesk_person_id = get_topdesk_user_id_by_mainframe(user_id)  # get the TOPdesk person card, searching by the above mainframe
+
+        if topdesk_person_id is not None:
+            #         # print(f"Person card in TOPdesk ID: {topdesk_person_id}")
+
+            # if the person card is found, attach the asset to it
+            response = make_request(
+                request_type=RequestType.PUT,
+                url=f"https://dlfseeds.topdesk.net/tas/api/assetmgmt/assets/{asset_id}/assignments",
+                auth=(topdesk_username, topdesk_password),
+                headers={
+                    'Content-Type': 'application/json'
+                },
+                json={
+                    "linkToId": topdesk_person_id,
+                    "linkType": "person"
+                }
+            )
+
+            return response
 
 skip_os = {
     'Unknown',
@@ -168,20 +181,7 @@ while url:
 
         # print(f"TOPdesk asset's ID: {asset_id}")
 
-        # get the ID of the user that uses the device;
-        # This is the same as a persons' mainframe ID, stored in TOPdesk person cards
-        # user_id = get_device_user(access_token, device["id"])
-        #
-        # if user_id is not None:
-        #     # print(f"User ID: {user_id}")
-        #
-        #     topdesk_person_id = get_topdesk_user_id_by_mainframe(user_id) # get the TOPdesk person card, searching by the above mainframe
-        #
-        #     if topdesk_person_id is not None:
-        #         # print(f"Person card in TOPdesk ID: {topdesk_person_id}")
-        #
-        #         assign_user_to_asset(asset_id, topdesk_person_id) # if the person card is found, attach the asset to it
-
-        # device_count += 1
+        # if the person card is found, attach the asset to it
+        assign_user_to_asset(device=device, asset_id=asset_id, tkn=access_token)
 
     url = response.get('@odata.nextLink')
