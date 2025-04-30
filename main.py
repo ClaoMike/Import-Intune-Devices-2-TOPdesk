@@ -33,38 +33,6 @@ def get_devices_from_curren_page(url, access_token):
     )
     return response.get('value'), response.get('@odata.nextLink')
 
-def create_device_asset(device_type: DeviceType, device):
-    if device_type == None:
-        return None
-
-    if device_type == DeviceType.COMPUTER:
-        category_key = topdesk_computer_category_id
-        name = device.get('displayName')
-
-    if device_type == DeviceType.MOBILE:
-        category_key = topdesk_mobile_category_id
-        name = device.get('id')
-
-    print(f"{device_type.value}-{name}")
-
-    response = make_request(
-        request_type=RequestType.POST,
-        url="https://dlfseeds.topdesk.net/tas/api/assetmgmt/assets",
-        auth=(topdesk_username, topdesk_password),
-        headers={
-            'Content-Type': 'application/json'
-        },
-        json={
-            "name": f"{device_type.value}-{name}",
-            "type_id": category_key,
-            "assignmentWidget": {
-                "assignPerson": "8bee9359-678b-43ca-a060-9b101b7bad6c"
-            }
-        }
-    )
-
-    return response
-
 def get_device_user(access_token, device_id):
     user = make_request(
         request_type=RequestType.GET,
@@ -97,6 +65,9 @@ def get_topdesk_user_id_by_mainframe(user_id):
         return None
 
 def assign_user_to_asset(device, asset_id, tkn):
+    if asset_id is None:
+        print(f"Asset ID is required to assign user to asset {asset_id}")
+        return
     # get the ID of the user that uses the device;
     # This is the same as a persons' mainframe ID, stored in TOPdesk person cards
     user_id = get_device_user(tkn, device["id"])
@@ -146,6 +117,43 @@ def validate_topdesk_asset(asset):
 
     return True
 
+def create_device_asset(device_type: DeviceType, device):
+    if device_type == None:
+        print("Unknown OS")
+        return None
+
+    if device_type == DeviceType.COMPUTER:
+        category_key = topdesk_computer_category_id
+        name = device.get('displayName')
+
+    if device_type == DeviceType.MOBILE:
+        category_key = topdesk_mobile_category_id
+        name = device.get('id')
+
+    print(f"{device_type.value}-{name}")
+
+    response = make_request(
+        request_type=RequestType.POST,
+        url="https://dlfseeds.topdesk.net/tas/api/assetmgmt/assets",
+        auth=(topdesk_username, topdesk_password),
+        headers={
+            'Content-Type': 'application/json'
+        },
+        json={
+            "name": f"{device_type.value}-{name}",
+            "type_id": category_key,
+            "assignmentWidget": {
+                "assignPerson": "8bee9359-678b-43ca-a060-9b101b7bad6c"
+            }
+        }
+    )
+    print(response)
+
+    if validate_topdesk_asset(response):
+        return response.get('data').get('unid')  # extract the newly created asset's ID
+    else:
+        return None
+
 skip_os = {
     'Unknown',
     'AndroidForWork',
@@ -184,14 +192,10 @@ while current_page_of_devices_url:
     for device in devices:
         print(f"{device_count}. ID: {device.get('id')} OS: {device.get('operatingSystem')} - Name: {device.get('displayName')} ")
 
-        device_as_topdesk_asset = create_device_asset(get_device_type(device.get('operatingSystem')), device)
-
-        if not validate_topdesk_asset(device_as_topdesk_asset):
-            continue
-
-        asset_id = device_as_topdesk_asset.get('data').get('unid') # save the newly created asset ID
-
-        # print(f"TOPdesk asset's ID: {asset_id}")
+        asset_id = create_device_asset(
+            get_device_type(
+                device.get('operatingSystem')
+            ), device)
 
         # if the person card is found, attach the asset to it
         assign_user_to_asset(device=device, asset_id=asset_id, tkn=access_token)
