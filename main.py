@@ -33,21 +33,6 @@ def get_devices_from_curren_page(url, tkn):
     )
     return response.get('value'), response.get('@odata.nextLink')
 
-# def get_device_user(tkn, device_id):
-#     user = make_request(
-#         request_type=RequestType.GET,
-#         url=f"https://graph.microsoft.com/v1.0/devices/{device_id}/registeredUsers",
-#         headers={
-#             'Authorization': f'Bearer {tkn}',
-#             'Content-Type': 'application/json'
-#         }
-#     )
-#
-#     try:
-#         return user.get('value')[0].get('id')
-#     except (AttributeError, KeyError, IndexError, TypeError):
-#         return None
-
 def get_topdesk_user_id_by_mainframe(user_id):
     topdesk_person = make_request(
         request_type=RequestType.GET,
@@ -67,19 +52,19 @@ def get_topdesk_user_id_by_mainframe(user_id):
 
 def assign_user_to_asset(dvc, topdesk_asset_id):
     if topdesk_asset_id is None:
-        print(f"Asset ID is required to assign user to asset {topdesk_asset_id}")
+        print("Asset ID is required to assign user to asset!")
         return
     # get the ID of the user that uses the device;
     # This is the same as a persons' mainframe ID, stored in TOPdesk person cards
     user_id = dvc.get("userId")
 
     if user_id is not None:
-        #     # print(f"User ID: {user_id}")
+        print(f"User ID: {user_id}")
 
         topdesk_person_id = get_topdesk_user_id_by_mainframe(user_id)  # get the TOPdesk person card, searching by the above mainframe
 
         if topdesk_person_id is not None:
-            #         # print(f"Person card in TOPdesk ID: {topdesk_person_id}")
+            print("Found its TOPdesk Person card.")
 
             # if the person card is found, attach the asset to it
             response = make_request(
@@ -96,6 +81,11 @@ def assign_user_to_asset(dvc, topdesk_asset_id):
             )
 
             return response
+        else:
+            print(f"User ID exists on Azure, but there is no Person card for it in TOPdesk.")
+    else:
+        print("No user assigned to this device!")
+        return
 
 def get_device_type(operating_system: str):
     if operating_system in skip_os:  # Skip these
@@ -152,10 +142,12 @@ def create_device_asset(device_type: DeviceType, dvc):
             }
         }
     )
-    print(response)
 
     if validate_topdesk_asset(response):
-        return response.get('data').get('unid')  # extract the newly created asset's ID
+        topdesk_id = response.get('data').get('unid')
+        print(f"TOPdesk ID: {topdesk_id}")
+
+        return topdesk_id  # extract the newly created asset's ID
     else:
         return None
 
@@ -178,7 +170,7 @@ while current_page_of_devices_url:
     devices, current_page_of_devices_url = get_devices_from_curren_page(current_page_of_devices_url, access_token)
 
     for device in devices:
-        print(f"{device_count}. ID: {device.get('id')} OS: {device.get('operatingSystem')} - Name: {device.get('displayName')} ")
+        print(f"{device_count}. ID: {device.get('id')} OS: {device.get('operatingSystem')}")
 
         asset_id = create_device_asset(
             get_device_type(
