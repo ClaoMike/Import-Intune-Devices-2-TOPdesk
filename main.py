@@ -22,30 +22,30 @@ def get_access_token():
 
     return response['access_token']
 
-def get_devices_from_curren_page(url, access_token):
+def get_devices_from_curren_page(url, tkn):
     response = make_request(
         request_type=RequestType.GET,
         url=url,
         headers={
-            'Authorization': f'Bearer {access_token}',
+            'Authorization': f'Bearer {tkn}',
             'Content-Type': 'application/json'
         },
     )
     return response.get('value'), response.get('@odata.nextLink')
 
-def get_device_user(access_token, device_id):
+def get_device_user(tkn, device_id):
     user = make_request(
         request_type=RequestType.GET,
         url=f"https://graph.microsoft.com/v1.0/devices/{device_id}/registeredUsers",
         headers={
-            'Authorization': f'Bearer {access_token}',
+            'Authorization': f'Bearer {tkn}',
             'Content-Type': 'application/json'
         }
     )
 
     try:
         return user.get('value')[0].get('id')
-    except:
+    except (AttributeError, KeyError, IndexError, TypeError):
         return None
 
 def get_topdesk_user_id_by_mainframe(user_id):
@@ -61,16 +61,17 @@ def get_topdesk_user_id_by_mainframe(user_id):
     try:
         if topdesk_person[0].get('status') != 'personArchived':
             return topdesk_person[0].get('id')
-    except:
+    except (AttributeError, KeyError, IndexError, TypeError):
         return None
 
-def assign_user_to_asset(device, asset_id, tkn):
-    if asset_id is None:
-        print(f"Asset ID is required to assign user to asset {asset_id}")
+
+def assign_user_to_asset(dvc, topdesk_asset_id, tkn):
+    if topdesk_asset_id is None:
+        print(f"Asset ID is required to assign user to asset {topdesk_asset_id}")
         return
     # get the ID of the user that uses the device;
     # This is the same as a persons' mainframe ID, stored in TOPdesk person cards
-    user_id = get_device_user(tkn, device["id"])
+    user_id = get_device_user(tkn, dvc["id"])
 
     if user_id is not None:
         #     # print(f"User ID: {user_id}")
@@ -83,7 +84,7 @@ def assign_user_to_asset(device, asset_id, tkn):
             # if the person card is found, attach the asset to it
             response = make_request(
                 request_type=RequestType.PUT,
-                url=f"https://dlfseeds.topdesk.net/tas/api/assetmgmt/assets/{asset_id}/assignments",
+                url=f"https://dlfseeds.topdesk.net/tas/api/assetmgmt/assets/{topdesk_asset_id}/assignments",
                 auth=(topdesk_username, topdesk_password),
                 headers={
                     'Content-Type': 'application/json'
@@ -96,12 +97,12 @@ def assign_user_to_asset(device, asset_id, tkn):
 
             return response
 
-def get_device_type(os: str):
-    if os in skip_os:  # Skip these
+def get_device_type(operating_system: str):
+    if operating_system in skip_os:  # Skip these
         return None
-    elif os in computer_os:
+    elif operating_system in computer_os:
         return DeviceType.COMPUTER
-    elif os in mobile_os:
+    elif operating_system in mobile_os:
         return DeviceType.MOBILE
     else:
         print("New OS detected - please take action")
@@ -117,18 +118,22 @@ def validate_topdesk_asset(asset):
 
     return True
 
-def create_device_asset(device_type: DeviceType, device):
-    if device_type == None:
+def create_device_asset(device_type: DeviceType, dvc):
+    if device_type is None:
         print("Unknown OS")
         return None
 
     if device_type == DeviceType.COMPUTER:
         category_key = topdesk_computer_category_id
-        name = device.get('displayName')
+        name = dvc.get('displayName')
 
-    if device_type == DeviceType.MOBILE:
+    elif device_type == DeviceType.MOBILE:
         category_key = topdesk_mobile_category_id
-        name = device.get('id')
+        name = dvc.get('id')
+
+    else:
+        print("Unknown device type")
+        return None
 
     print(f"{device_type.value}-{name}")
 
@@ -181,6 +186,6 @@ while current_page_of_devices_url:
             ), device)
 
         # if the person card is found, attach the asset to it
-        assign_user_to_asset(device=device, asset_id=asset_id, tkn=access_token)
+        assign_user_to_asset(dvc=device, topdesk_asset_id=asset_id, tkn=access_token)
 
         device_count += 1
