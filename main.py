@@ -23,7 +23,7 @@ def get_access_token():
     return response['access_token']
 
 def get_devices_from_curren_page(url, access_token):
-    return make_request(
+    response = make_request(
         request_type=RequestType.GET,
         url=url,
         headers={
@@ -31,6 +31,7 @@ def get_devices_from_curren_page(url, access_token):
             'Content-Type': 'application/json'
         },
     )
+    return response.get('value'), response.get('@odata.nextLink')
 
 def create_device_asset(device_type: DeviceType, device):
     if device_type == DeviceType.COMPUTER:
@@ -142,8 +143,8 @@ access_token = get_access_token()
 start_time = time.time()
 
 device_count=1
-url = "https://graph.microsoft.com/v1.0/devices"
-while url:
+current_page_of_devices_url = "https://graph.microsoft.com/v1.0/devices"
+while current_page_of_devices_url:
     # see if you need a new access token
     end_time = time.time()
     elapsed_seconds = end_time - start_time
@@ -152,10 +153,9 @@ while url:
         access_token = get_access_token()
         start_time = time.time()
 
-    # get devices from the current page
-    response = get_devices_from_curren_page(url, access_token)
+    # get devices from the current page and the link to the following page, if it exists
+    devices, current_page_of_devices_url = get_devices_from_curren_page(current_page_of_devices_url, access_token)
 
-    devices = response['value']
     for device in devices:
 
         if device.get('operatingSystem') in skip_os: # Skip these
@@ -183,5 +183,3 @@ while url:
 
         # if the person card is found, attach the asset to it
         assign_user_to_asset(device=device, asset_id=asset_id, tkn=access_token)
-
-    url = response.get('@odata.nextLink')
