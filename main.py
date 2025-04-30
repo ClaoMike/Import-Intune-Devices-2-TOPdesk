@@ -3,7 +3,7 @@
 from utils import make_request, RequestType, DeviceType
 from env_variables import *
 import time
-import json
+from operating_systems import *
 
 def get_access_token():
     response = make_request(
@@ -153,23 +153,6 @@ def create_device_asset(device_type: DeviceType, device):
         return response.get('data').get('unid')  # extract the newly created asset's ID
     else:
         return None
-
-skip_os = {
-    'Unknown',
-    'AndroidForWork',
-    'MacMDM',
-    'MacOS',
-}
-
-computer_os = {
-    'Windows',
-}
-
-mobile_os = {
-    'Android',
-    'iOS',
-    'AndroidEnterprise',
-}
 
 # get the intune access token, it lasts for 3599 seconds, so we have to re-get it if an hour passes
 access_token = get_access_token()
