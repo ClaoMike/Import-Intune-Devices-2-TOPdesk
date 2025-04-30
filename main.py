@@ -33,20 +33,20 @@ def get_devices_from_curren_page(url, tkn):
     )
     return response.get('value'), response.get('@odata.nextLink')
 
-def get_device_user(tkn, device_id):
-    user = make_request(
-        request_type=RequestType.GET,
-        url=f"https://graph.microsoft.com/v1.0/devices/{device_id}/registeredUsers",
-        headers={
-            'Authorization': f'Bearer {tkn}',
-            'Content-Type': 'application/json'
-        }
-    )
-
-    try:
-        return user.get('value')[0].get('id')
-    except (AttributeError, KeyError, IndexError, TypeError):
-        return None
+# def get_device_user(tkn, device_id):
+#     user = make_request(
+#         request_type=RequestType.GET,
+#         url=f"https://graph.microsoft.com/v1.0/devices/{device_id}/registeredUsers",
+#         headers={
+#             'Authorization': f'Bearer {tkn}',
+#             'Content-Type': 'application/json'
+#         }
+#     )
+#
+#     try:
+#         return user.get('value')[0].get('id')
+#     except (AttributeError, KeyError, IndexError, TypeError):
+#         return None
 
 def get_topdesk_user_id_by_mainframe(user_id):
     topdesk_person = make_request(
@@ -65,13 +65,13 @@ def get_topdesk_user_id_by_mainframe(user_id):
         return None
 
 
-def assign_user_to_asset(dvc, topdesk_asset_id, tkn):
+def assign_user_to_asset(dvc, topdesk_asset_id):
     if topdesk_asset_id is None:
         print(f"Asset ID is required to assign user to asset {topdesk_asset_id}")
         return
     # get the ID of the user that uses the device;
     # This is the same as a persons' mainframe ID, stored in TOPdesk person cards
-    user_id = get_device_user(tkn, dvc["id"])
+    user_id = dvc.get("userId")
 
     if user_id is not None:
         #     # print(f"User ID: {user_id}")
@@ -125,7 +125,7 @@ def create_device_asset(device_type: DeviceType, dvc):
 
     if device_type == DeviceType.COMPUTER:
         category_key = topdesk_computer_category_id
-        name = dvc.get('displayName')
+        name = dvc.get('serialNumber')
 
     elif device_type == DeviceType.MOBILE:
         category_key = topdesk_mobile_category_id
@@ -135,7 +135,7 @@ def create_device_asset(device_type: DeviceType, dvc):
         print("Unknown device type")
         return None
 
-    print(f"{device_type.value}-{name}")
+    print(f"TOPdesk name: {device_type.value}-{name}")
 
     response = make_request(
         request_type=RequestType.POST,
@@ -164,7 +164,7 @@ access_token = get_access_token()
 start_time = time.time()
 
 device_count=1
-current_page_of_devices_url = "https://graph.microsoft.com/v1.0/devices"
+current_page_of_devices_url = "https://graph.microsoft.com/v1.0/deviceManagement/managedDevices"
 while current_page_of_devices_url:
     # see if you need a new access token
     end_time = time.time()
@@ -186,6 +186,6 @@ while current_page_of_devices_url:
             ), device)
 
         # if the person card is found, attach the asset to it
-        assign_user_to_asset(dvc=device, topdesk_asset_id=asset_id, tkn=access_token)
+        assign_user_to_asset(dvc=device, topdesk_asset_id=asset_id)
 
         device_count += 1
