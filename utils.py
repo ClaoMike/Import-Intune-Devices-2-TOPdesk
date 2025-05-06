@@ -1,26 +1,10 @@
 import requests
-from enum import Enum
 from requests import Response
 import json
 from operating_systems import *
 from env_variables import *
-
-class RequestType(Enum):
-    """
-        Enum representing the types of HTTP requests supported by the TOPdesk API.
-    """
-    POST = "POST"
-    PATCH = "PATCH"
-    PUT = "PUT"
-    GET = "GET"
-
-class DeviceType(Enum):
-    """
-        Enum representing the types of devices.
-    """
-    COMPUTER = "COMPUTER"
-    MOBILE = "MOBILE"
-    DEVICE = "DEVICE"
+from json_parsing import *
+from requests_types import *
 
 def make_request(request_type: RequestType, url: str, headers, data=None, auth=None, json=None, params=None):
     """
@@ -193,57 +177,22 @@ def create_asset_for(platform, device):
 
     # assign_user
 
-def generate_intune_asset_as_json(device, asset_name, template_id):
-    print(f"Creating TOPdesk asset with name: {asset_name}")
+def get_user_id_of_azure_device(device, tkn):
+    response = make_request(
+        request_type=RequestType.GET,
+        url=f"https://graph.microsoft.com/v1.0/devices/{device.get('id')}/registeredUsers",
+        headers={
+            'Authorization': f'Bearer {tkn}',
+            'Content-Type': 'application/json'
+        },
+        json=json
+    )
 
-    json = {
-        "name": f"{asset_name}",  # asset id
-        "type_id": template_id,  # asset template
-        "intune-id": device.get("id"),  # Intune ID
-        "azure-ad-registered": device.get("azureADRegistered"),
-        "azure-id": device.get("azureADDeviceId"),  # azure ID
-        "serial-number": device.get("serialNumber"),
-        "name-1": device.get("deviceName"),
-        "manufacturer-1": device.get("manufacturer"),
-        "model-1": device.get("model"),
-        "operating-system": device.get('operatingSystem'),
-        "os-version": device.get("osVersion"),
-        "enrollment-date": device.get("enrolledDateTime"),
-        "last-check-in": device.get("lastSyncDateTime"),
-        "management-certificate-expiration-date": device.get("managementCertificateExpirationDate"),
-        "ismanaged": device.get("isSupervised"),
-        "imei": device.get("imei"),
-        "encrypted": device.get("isEncrypted"),
-        "subscriber-carrier": device.get("subscriberCarrier"),
-        "total-storage": device.get("totalStorageSpaceInBytes"),
-        "storage": device.get("freeStorageSpaceInBytes"),
-        "compliance-status": device.get("complianceState"),
-        "ownership": device.get("managedDeviceOwnerType"),
-        "user-id": device.get("userId"),
-    }
-
-    return json
-
-def generate_azure_asset_as_json(device, asset_name, template_id, userId):
-    print(f"Creating TOPdesk asset with name: {asset_name}")
-
-    json = {
-        "name": f"{asset_name}",  # asset id
-        "type_id": template_id,  # asset template
-        "azure-id": device.get("id"),  # azure ID
-        "name-1": device.get("displayName"),
-        "manufacturer-1": device.get("manufacturer"),
-        "model-1": device.get("model"),
-        "operating-system": device.get('operatingSystem'),
-        "os-version": device.get("operatingSystemVersion"),
-        "enrollment-date": device.get("registrationDateTime"),
-        "last-check-in": device.get("approximateLastSignInDateTime"),
-        "ismanaged": device.get("isManaged"),
-        "compliance-status": device.get("isCompliant"),
-        "user-id": userId,
-    }
-
-    return json
+    if 200 <= response.status_code < 300:
+        print(f"User found: {response.json()}")
+    else:
+        error_message = f"Error {response.status_code}: {response.text}"
+        raise ValueError(error_message)
 
 # def get_topdesk_user_id_by_mainframe(user_id):
 #     topdesk_person = make_request(
