@@ -1,12 +1,14 @@
-skip_os = {
+device_os = {
     'Unknown',
     'AndroidForWork',
+    '',
 }
 
 computer_os = {
     'Windows',
     'MacMDM',
-    'MacOS',
+    'macOS',
+    'MacOS'
 }
 
 mobile_os = {

@@ -20,6 +20,7 @@ class DeviceType(Enum):
     """
     COMPUTER = "COMPUTER"
     MOBILE = "MOBILE"
+    DEVICE = "DEVICE"
 
 def make_request(request_type: RequestType, url: str, headers, data=None, auth=None, json=None, params=None):
     """
@@ -107,6 +108,48 @@ def get_devices_from_curren_page(url, tkn):
         error_message = f"Error {response.status_code}: {response.text}"
         raise ValueError(error_message)
 
+def get_device_type(operating_system: str):
+    if operating_system in device_os:  # Skip these
+        return DeviceType.DEVICE
+    elif operating_system in computer_os:
+        return DeviceType.COMPUTER
+    elif operating_system in mobile_os:
+        return DeviceType.MOBILE
+    else:
+        print("New OS detected - please take action")
+        return None
+
+def generate_asset_name(platform, device):
+    if platform == "intune":
+        id = device.get('azureADDeviceId')
+    else:
+        id = device.get('id')
+
+    operating_system = device.get('operatingSystem')
+    type = get_device_type(operating_system).value
+
+    return f"{type}-{id}"
+
+def search_for_topdesk_asset_by_asset_name(asset_name):
+    response = make_request(
+        request_type=RequestType.GET,
+        url=f"https://dlfseeds.topdesk.net/tas/api/assetmgmt/assets?nameFragment={asset_name}",
+        auth=(topdesk_username, topdesk_password),
+        headers={
+            'Content-Type': 'application/json'
+        }
+    )
+
+    if 200 <= response.status_code < 300:
+        data_set = response.json().get('dataSet')
+        if len(data_set) == 0:
+            return None
+        else:
+            return data_set[0].get('id')
+    else:
+        error_message = f"Error {response.status_code}: {response.text}"
+        raise ValueError(error_message)
+
 
 # def get_topdesk_user_id_by_mainframe(user_id):
 #     topdesk_person = make_request(
@@ -162,17 +205,6 @@ def get_devices_from_curren_page(url, tkn):
 #         print("No user assigned to this device!")
 #         return
 
-# def get_device_type(operating_system: str):
-#     if operating_system in skip_os:  # Skip these
-#         return None
-#     elif operating_system in computer_os:
-#         return DeviceType.COMPUTER
-#     elif operating_system in mobile_os:
-#         return DeviceType.MOBILE
-#     else:
-#         print("New OS detected - please take action")
-#         return None
-
 # def validate_topdesk_asset(asset):
 #     if asset is None:  # no device created, thus we move to the next one
 #         return False
@@ -182,6 +214,8 @@ def get_devices_from_curren_page(url, tkn):
 #         return False
 #
 #     return True
+
+
 
 # def create_device_asset(device_type: DeviceType, dvc):
 #     if device_type is None:
@@ -244,20 +278,4 @@ def get_devices_from_curren_page(url, tkn):
 #
 #         return topdesk_id  # extract the newly created asset's ID
 #     else:
-#         return None
-
-# def search_for_topdesk_asset_by_asset_name(asset_name):
-#     topdesk_person = make_request(
-#         request_type=RequestType.GET,
-#         url=f"https://dlfseeds.topdesk.net/tas/api/assetmgmt/assets?nameFragment={asset_name}",
-#         auth=(topdesk_username, topdesk_password),
-#         headers={
-#             'Content-Type': 'application/json'
-#         }
-#     )
-#
-#     try:
-#         if topdesk_person[0].get('status') != 'personArchived':
-#             return topdesk_person[0].get('id')
-#     except (AttributeError, KeyError, IndexError, TypeError):
 #         return None
