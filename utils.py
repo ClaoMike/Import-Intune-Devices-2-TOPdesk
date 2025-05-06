@@ -230,10 +230,7 @@ def generate_azure_asset_as_json(device, asset_name, template_id, userId):
     json = {
         "name": f"{asset_name}",  # asset id
         "type_id": template_id,  # asset template
-        # "intune-id": "N/A",  # Intune ID
-        # "azure-ad-registered": "null",
         "azure-id": device.get("id"),  # azure ID
-        # "serial-number": "N/A",
         "name-1": device.get("displayName"),
         "manufacturer-1": device.get("manufacturer"),
         "model-1": device.get("model"),
@@ -241,15 +238,8 @@ def generate_azure_asset_as_json(device, asset_name, template_id, userId):
         "os-version": device.get("operatingSystemVersion"),
         "enrollment-date": device.get("registrationDateTime"),
         "last-check-in": device.get("approximateLastSignInDateTime"),
-        # "management-certificate-expiration-date": "null",
         "ismanaged": device.get("isManaged"),
-        # "imei": "N/A",
-        # "encrypted": "false",
-        # "subscriber-carrier": "N/A",
-        # "total-storage": "null",
-        # "storage": "null",
         "compliance-status": device.get("isCompliant"),
-        # "ownership": "N/A",
         "user-id": userId,
     }
 
