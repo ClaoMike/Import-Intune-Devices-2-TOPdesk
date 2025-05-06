@@ -5,6 +5,7 @@ from operating_systems import *
 from env_variables import *
 from json_parsing import *
 from requests_types import *
+from device_types import *
 
 def make_request(request_type: RequestType, url: str, headers, data=None, auth=None, json=None, params=None):
     """
