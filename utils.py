@@ -150,6 +150,82 @@ def search_for_topdesk_asset_by_asset_name(asset_name):
         error_message = f"Error {response.status_code}: {response.text}"
         raise ValueError(error_message)
 
+def get_device_template(device):
+    operating_system = device.get('operatingSystem')
+    type = get_device_type(operating_system)
+
+    if type is DeviceType.DEVICE:  # Skip these
+        return topdesk_device_category_id
+    elif type is DeviceType.COMPUTER:
+        return topdesk_computer_category_id
+    elif type is DeviceType.MOBILE:
+        return topdesk_mobile_category_id
+    else:
+        print("New OS detected - please take action")
+        return None
+
+def create_asset_for(platform, device):
+    # create_asset
+    asset_name = generate_asset_name(platform, device)
+    template_id = get_device_template(device)
+
+    if platform == "intune":
+        json = generate_intune_asset_as_json(device, asset_name, template_id)
+    else:
+        # json = generate_azure_asset_as_json(device)
+        pass
+
+    response = make_request(
+        request_type=RequestType.POST,
+        url="https://dlfseeds.topdesk.net/tas/api/assetmgmt/assets",
+        auth=(topdesk_username, topdesk_password),
+        headers={
+            'Content-Type': 'application/json'
+        },
+        json=json
+    )
+
+    if 200 <= response.status_code < 300:
+        print("Asset successfully created")
+    else:
+        error_message = f"Error {response.status_code}: {response.text}"
+        raise ValueError(error_message)
+
+    # assign_user
+
+def generate_intune_asset_as_json(device, asset_name, template_id):
+    print(f"Creating TOPdesk asset with name: {asset_name}")
+
+    json = {
+        "name": f"{asset_name}",  # asset id
+        "type_id": template_id,  # asset template
+        "intune-id": device.get("id"),  # Intune ID
+        "azure-ad-registered": device.get("azureADRegistered"),
+        "azure-id": device.get("azureADDeviceId"),  # azure ID
+        "serial-number": device.get("serialNumber"),
+        "name-1": device.get("deviceName"),
+        "manufacturer-1": device.get("manufacturer"),
+        "model-1": device.get("model"),
+        "operating-system": device.get('operatingSystem'),
+        "os-version": device.get("osVersion"),
+        "enrollment-date": device.get("enrolledDateTime"),
+        "last-check-in": device.get("lastSyncDateTime"),
+        "management-certificate-expiration-date": device.get("managementCertificateExpirationDate"),
+        "ismanaged": device.get("isSupervised"),
+        "imei": device.get("imei"),
+        "encrypted": device.get("isEncrypted"),
+        "subscriber-carrier": device.get("subscriberCarrier"),
+        "total-storage": device.get("totalStorageSpaceInBytes"),
+        "storage": device.get("freeStorageSpaceInBytes"),
+        "compliance-status": device.get("complianceState"),
+        "ownership": device.get("managedDeviceOwnerType"),
+        "user-id": device.get("userId"),
+    }
+
+    return json
+
+def generate_azure_asset_as_json(device):
+    pass
 
 # def get_topdesk_user_id_by_mainframe(user_id):
 #     topdesk_person = make_request(
@@ -205,77 +281,3 @@ def search_for_topdesk_asset_by_asset_name(asset_name):
 #         print("No user assigned to this device!")
 #         return
 
-# def validate_topdesk_asset(asset):
-#     if asset is None:  # no device created, thus we move to the next one
-#         return False
-#
-#     if asset.get('data') is None:  # if no data here, it means it must be an accepted error
-#         print("No data for this device, check for errors!")
-#         return False
-#
-#     return True
-
-
-
-# def create_device_asset(device_type: DeviceType, dvc):
-#     if device_type is None:
-#         print("Unknown OS")
-#         return None
-#
-#     if device_type == DeviceType.COMPUTER:
-#         category_key = topdesk_computer_category_id
-#         name = dvc.get('serialNumber')
-#
-#     elif device_type == DeviceType.MOBILE:
-#         category_key = topdesk_mobile_category_id
-#         name = dvc.get('id')
-#
-#     else:
-#         print("Unknown device type")
-#         return None
-#
-#     print(f"TOPdesk name: {device_type.value}-{name}")
-#
-#     response = make_request(
-#         request_type=RequestType.POST,
-#         url="https://dlfseeds.topdesk.net/tas/api/assetmgmt/assets",
-#         auth=(topdesk_username, topdesk_password),
-#         headers={
-#             'Content-Type': 'application/json'
-#         },
-#         json={
-#             "name": f"{device_type.value}-{name}", # asset id
-#             "type_id": category_key, # asset template
-#
-#             "intune-id": dvc.get("id"), # Intune ID
-#             "azure-ad-registered": dvc.get("azureADRegistered"),
-#             "azure-id": dvc.get("azureADDeviceId"), # azure ID
-#             "serial-number": dvc.get("serialNumber"),
-#             "name-1": dvc.get("deviceName"),
-#             "manufacturer-1": dvc.get("manufacturer"),
-#             "model-1": dvc.get("model"),
-#             "operating-system": dvc.get('operatingSystem'),
-#             "os-version": dvc.get("osVersion"),
-#             "enrollment-date": dvc.get("enrolledDateTime"),
-#             "last-check-in": dvc.get("lastSyncDateTime"),
-#             "management-certificate-expiration-date": dvc.get("managementCertificateExpirationDate"),
-#             "ismanaged": dvc.get("isSupervised"),
-#             "imei": dvc.get("imei"),
-#             "encrypted": dvc.get("isEncrypted"),
-#             "subscriber-carrier": dvc.get("subscriberCarrier"),
-#             "total-storage": dvc.get("totalStorageSpaceInBytes"),
-#             "storage": dvc.get("freeStorageSpaceInBytes"),
-#             "compliance-status": dvc.get("complianceState"),
-#             "ownership": dvc.get("managedDeviceOwnerType"),
-#         }
-#     )
-#
-#     print(response)
-#
-#     if validate_topdesk_asset(response):
-#         topdesk_id = response.get('data').get('unid')
-#         print(f"TOPdesk ID: {topdesk_id}")
-#
-#         return topdesk_id  # extract the newly created asset's ID
-#     else:
-#         return None

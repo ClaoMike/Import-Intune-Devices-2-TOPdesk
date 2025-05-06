@@ -9,7 +9,7 @@ start_time = time.time()
 
 platforms = {
     "intune": "https://graph.microsoft.com/v1.0/deviceManagement/managedDevices",
-    "azure": "https://graph.microsoft.com/v1.0/devices"
+    # "azure": "https://graph.microsoft.com/v1.0/devices"
 }
 
 device_count=1
@@ -30,24 +30,18 @@ for platform, next_devices_page_url in platforms.items():
 
         for device in devices:
             print(f"{device_count}. Device: {device}")
-            print(generate_asset_name(platform, device))
+            asset_name = generate_asset_name(platform, device)
 
-            # search_for_topdesk_asset_by_asset_name(asset_name)
-
-            # if device exists as an asset:
-            #     if asset is not equal to device
-            #         update device
-            #     else
-            #         continue
-            # else
-            #     create asset with this device
-
-            # asset_id = create_device_asset(
-            #     get_device_type(
-            #         device.get('operatingSystem')
-            #     ), device)
-            #
-            # # if the person card is found, attach the asset to it
-            # assign_user_to_asset(dvc=device, topdesk_asset_id=asset_id)
+            # search if the device already has an asset
+            topdesk_asset = search_for_topdesk_asset_by_asset_name(asset_name)
+            # if the device does have an asset:
+            if topdesk_asset:
+                print(f"Asset found")
+                # update device
+            # if the device does not have an asset
+            else:
+                print(f"Asset not found")
+                # create asset with this device
+                create_asset_for(platform, device)
 
             device_count += 1
