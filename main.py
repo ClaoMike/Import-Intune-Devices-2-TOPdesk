@@ -9,7 +9,7 @@ start_time = time.time()
 
 platforms = {
     "intune": "https://graph.microsoft.com/v1.0/deviceManagement/managedDevices",
-    # "azure": "https://graph.microsoft.com/v1.0/devices"
+    "azure": "https://graph.microsoft.com/v1.0/devices"
 }
 
 device_count=1

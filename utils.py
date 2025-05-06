@@ -172,8 +172,8 @@ def create_asset_for(platform, device):
     if platform == "intune":
         json = generate_intune_asset_as_json(device, asset_name, template_id)
     else:
-        # json = generate_azure_asset_as_json(device)
-        pass
+        userId = "N/A"
+        json = generate_azure_asset_as_json(device, asset_name, template_id, userId)
 
     response = make_request(
         request_type=RequestType.POST,
@@ -224,8 +224,36 @@ def generate_intune_asset_as_json(device, asset_name, template_id):
 
     return json
 
-def generate_azure_asset_as_json(device):
-    pass
+def generate_azure_asset_as_json(device, asset_name, template_id, userId):
+    print(f"Creating TOPdesk asset with name: {asset_name}")
+
+    json = {
+        "name": f"{asset_name}",  # asset id
+        "type_id": template_id,  # asset template
+        # "intune-id": "N/A",  # Intune ID
+        # "azure-ad-registered": "null",
+        "azure-id": device.get("id"),  # azure ID
+        # "serial-number": "N/A",
+        "name-1": device.get("displayName"),
+        "manufacturer-1": device.get("manufacturer"),
+        "model-1": device.get("model"),
+        "operating-system": device.get('operatingSystem'),
+        "os-version": device.get("operatingSystemVersion"),
+        "enrollment-date": device.get("registrationDateTime"),
+        "last-check-in": device.get("approximateLastSignInDateTime"),
+        # "management-certificate-expiration-date": "null",
+        "ismanaged": device.get("isManaged"),
+        # "imei": "N/A",
+        # "encrypted": "false",
+        # "subscriber-carrier": "N/A",
+        # "total-storage": "null",
+        # "storage": "null",
+        "compliance-status": device.get("isCompliant"),
+        # "ownership": "N/A",
+        "user-id": userId,
+    }
+
+    return json
 
 # def get_topdesk_user_id_by_mainframe(user_id):
 #     topdesk_person = make_request(
