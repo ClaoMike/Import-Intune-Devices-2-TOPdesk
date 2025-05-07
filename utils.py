@@ -1,63 +1,12 @@
 import requests
-from requests import Response
 import json
 from operating_systems import *
 from env_variables import *
 from json_parsing import *
-from requests_types import *
 from device_types import *
 
-def make_request(request_type: RequestType, url: str, headers, data=None, auth=None, json=None, params=None):
-    """
-        Makes an HTTP request with the specified request type.
-
-        Returns:
-            dict: The JSON response from the API.
-
-        Raises:
-            SystemExit: If an unsupported request type is provided.
-    """
-    # Construct request parameters
-    request_params = {
-        "url": url,
-        "headers": headers,
-    }
-
-    if data is not None:
-        request_params["data"] = data
-
-    if auth is not None:
-        request_params["auth"] = auth
-
-    if json is not None:
-        request_params["json"] = json
-
-    if params is not None:
-        request_params["params"] = params
-
-    # Log the request attempt
-    # print(f"Performing a {request_type.value} request at {request_params['url']}")
-
-    # Perform the appropriate HTTP request based on the request type
-    if request_type == RequestType.GET:
-        response = requests.get(**request_params)
-
-    elif request_type == RequestType.PATCH:
-        response = requests.patch(**request_params)
-
-    elif request_type == RequestType.POST:
-        response = requests.post(**request_params)
-
-    elif request_type == RequestType.PUT:
-        response = requests.put(**request_params)
-    else:
-        raise ValueError("Invalid request type")
-
-    return response
-
 def get_access_token():
-    response = make_request(
-        request_type=RequestType.POST,
+    response = requests.post(
         url=f"https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/token",
         headers={
             'Content-Type': 'application/x-www-form-urlencoded',
@@ -78,8 +27,7 @@ def get_access_token():
         raise ValueError(error_message)
 
 def get_devices_from_curren_page(url, tkn):
-    response = make_request(
-        request_type=RequestType.GET,
+    response = requests.get(
         url=url,
         headers={
             'Authorization': f'Bearer {tkn}',
@@ -116,8 +64,7 @@ def generate_asset_name(platform, device):
     return f"{type}-{id}"
 
 def search_for_topdesk_asset_by_asset_name(asset_name):
-    response = make_request(
-        request_type=RequestType.GET,
+    response = requests.get(
         url=f"https://dlfseeds.topdesk.net/tas/api/assetmgmt/assets?nameFragment={asset_name}",
         auth=(topdesk_username, topdesk_password),
         headers={
@@ -161,8 +108,7 @@ def create_asset_for(platform, device, tkn):
         userId = get_user_id_of_azure_device(device, tkn)
         json = generate_azure_asset_as_json(device, asset_name, template_id, userId)
 
-    response = make_request(
-        request_type=RequestType.POST,
+    response = requests.post(
         url="https://dlfseeds.topdesk.net/tas/api/assetmgmt/assets",
         auth=(topdesk_username, topdesk_password),
         headers={
@@ -192,8 +138,7 @@ def create_asset_for(platform, device, tkn):
     assign_user_to_asset(topdesk_person_card_id, asset_id)
 
 def get_user_id_of_azure_device(device, tkn):
-    response = make_request(
-        request_type=RequestType.GET,
+    response = requests.get(
         url=f"https://graph.microsoft.com/v1.0/devices/{device.get('id')}/registeredUsers",
         headers={
             'Authorization': f'Bearer {tkn}',
@@ -215,8 +160,7 @@ def get_user_id_of_azure_device(device, tkn):
         raise ValueError(error_message)
 
 def get_topdesk_user_id_by_mainframe(user_id):
-    response = make_request(
-        request_type=RequestType.GET,
+    response = requests.get(
         url=f"https://dlfseeds.topdesk.net/tas/api/persons?query=mainframeLoginName=={user_id}",
         auth=(topdesk_username, topdesk_password),
         headers={
@@ -241,8 +185,7 @@ def get_topdesk_user_id_by_mainframe(user_id):
         raise ValueError(error_message)
 
 def assign_user_to_asset(person_card_id, asset_id):
-    response = make_request(
-        request_type=RequestType.PUT,
+    response = requests.put(
         url=f"https://dlfseeds.topdesk.net/tas/api/assetmgmt/assets/{asset_id}/assignments",
         auth=(topdesk_username, topdesk_password),
         headers={

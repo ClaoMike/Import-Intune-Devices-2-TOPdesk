@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-from utils import make_request, RequestType
 from env_variables import *
+import requests
 
 page_size = 500
 asset_counter = 1
@@ -9,8 +9,7 @@ removable_assets_categories = [topdesk_computer_category_id, topdesk_mobile_cate
 for removable_asset_category in removable_assets_categories:
     page_start = 0
     while True:
-        response = make_request(
-            request_type=RequestType.GET,
+        response = requests.get(
             url=f"https://dlfseeds.topdesk.net/tas/api/assetmgmt/assets?templateId={removable_asset_category}&fields=name",
             auth=(topdesk_username, topdesk_password),
             headers={
@@ -35,8 +34,7 @@ for removable_asset_category in removable_assets_categories:
             print(f"{asset_counter}. {unid}")
             asset_counter += 1
 
-        make_request(
-            request_type=RequestType.POST,
+        requests.post(
             url=f"https://dlfseeds.topdesk.net/tas/api/assetmgmt/assets/delete",
             auth=(topdesk_username, topdesk_password),
             headers={
