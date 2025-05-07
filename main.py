@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-
 from utils import *
 import time
+from authentication import *
 
 # get the intune access token, it lasts for 3599 seconds, so we have to re-get it if an hour passes
 access_token = get_access_token()
