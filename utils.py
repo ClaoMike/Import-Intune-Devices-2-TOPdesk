@@ -161,21 +161,21 @@ def create_asset_for(platform, device, tkn):
         userId = get_user_id_of_azure_device(device, tkn)
         # json = generate_azure_asset_as_json(device, asset_name, template_id, userId)
 
-    response = make_request(
-        request_type=RequestType.POST,
-        url="https://dlfseeds.topdesk.net/tas/api/assetmgmt/assets",
-        auth=(topdesk_username, topdesk_password),
-        headers={
-            'Content-Type': 'application/json'
-        },
-        json=json
-    )
+    # response = make_request(
+    #     request_type=RequestType.POST,
+    #     url="https://dlfseeds.topdesk.net/tas/api/assetmgmt/assets",
+    #     auth=(topdesk_username, topdesk_password),
+    #     headers={
+    #         'Content-Type': 'application/json'
+    #     },
+    #     json=json
+    # )
 
-    if 200 <= response.status_code < 300:
-        print("Asset successfully created")
-    else:
-        error_message = f"Error {response.status_code}: {response.text}"
-        raise ValueError(error_message)
+    # if 200 <= response.status_code < 300:
+    #     print("Asset successfully created")
+    # else:
+    #     error_message = f"Error {response.status_code}: {response.text}"
+    #     raise ValueError(error_message)
 
     # assign_user
 
@@ -187,12 +187,17 @@ def get_user_id_of_azure_device(device, tkn):
             'Authorization': f'Bearer {tkn}',
             'Content-Type': 'application/json'
         },
-        json=json
     )
 
     if 200 <= response.status_code < 300:
-        print(f"User found: {response.json()}")
-        return response.json().get('value')[0].get('id')
+        user = response.json().get('value')
+        if len(user) == 0:
+            print(f"No user for this device!")
+            return None
+        else:
+            user = user[0].get('id')
+            print(f"User found: {user}")
+        return user
     else:
         error_message = f"Error {response.status_code}: {response.text}"
         raise ValueError(error_message)

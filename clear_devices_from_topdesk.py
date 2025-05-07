@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 from utils import make_request, RequestType
 from env_variables import *
-import requests
-import json
 
 page_size = 500
 asset_counter = 1
