@@ -8,7 +8,7 @@ access_token = get_access_token()
 start_time = time.time()
 
 platforms = {
-    # "intune": "https://graph.microsoft.com/v1.0/deviceManagement/managedDevices",
+    "intune": "https://graph.microsoft.com/v1.0/deviceManagement/managedDevices",
     "azure": "https://graph.microsoft.com/v1.0/devices"
 }
 

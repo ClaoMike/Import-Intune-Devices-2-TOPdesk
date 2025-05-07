@@ -161,29 +161,35 @@ def create_asset_for(platform, device, tkn):
         userId = get_user_id_of_azure_device(device, tkn)
         json = generate_azure_asset_as_json(device, asset_name, template_id, userId)
 
-    # response = make_request(
-    #     request_type=RequestType.POST,
-    #     url="https://dlfseeds.topdesk.net/tas/api/assetmgmt/assets",
-    #     auth=(topdesk_username, topdesk_password),
-    #     headers={
-    #         'Content-Type': 'application/json'
-    #     },
-    #     json=json
-    # )
-    #
-    # if 200 <= response.status_code < 300:
-    #     asset_id = response.json().get('data').get('unid')
-    #     print(f"Successfully created the asset with ID:{asset_id}")
-    # else:
-    #     error_message = f"Error {response.status_code}: {response.text}"
-    #     raise ValueError(error_message)
+    response = make_request(
+        request_type=RequestType.POST,
+        url="https://dlfseeds.topdesk.net/tas/api/assetmgmt/assets",
+        auth=(topdesk_username, topdesk_password),
+        headers={
+            'Content-Type': 'application/json'
+        },
+        json=json
+    )
+
+    if 200 <= response.status_code < 300:
+        asset_id = response.json().get('data').get('unid')
+        print(f"Successfully created the asset with ID:{asset_id}")
+    else:
+        error_message = f"Error {response.status_code}: {response.text}"
+        raise ValueError(error_message)
 
     # assign_user
     if userId is None or userId == '':
         return
 
     topdesk_person_card_id = get_topdesk_user_id_by_mainframe(userId)
+
+    if topdesk_person_card_id is None:
+        return
+
     print(f"TOPdesk card ID: {topdesk_person_card_id}")
+
+    assign_user_to_asset(topdesk_person_card_id, asset_id)
 
 def get_user_id_of_azure_device(device, tkn):
     response = make_request(
@@ -234,40 +240,22 @@ def get_topdesk_user_id_by_mainframe(user_id):
         error_message = f"Error {response.status_code}: {response.text}"
         raise ValueError(error_message)
 
-# def assign_user_to_asset(dvc, topdesk_asset_id):
-#     if topdesk_asset_id is None:
-#         print("Asset ID is required to assign user to asset!")
-#         return
-#     # get the ID of the user that uses the device;
-#     # This is the same as a persons' mainframe ID, stored in TOPdesk person cards
-#     user_id = dvc.get("userId")
-#
-#     if user_id != "":
-#         print(f"User ID: {user_id}")
-#
-#         topdesk_person_id = get_topdesk_user_id_by_mainframe(user_id)  # get the TOPdesk person card, searching by the above mainframe
-#
-#         if topdesk_person_id is not None:
-#             print("Found its TOPdesk Person card.")
-#
-#             # if the person card is found, attach the asset to it
-#             response = make_request(
-#                 request_type=RequestType.PUT,
-#                 url=f"https://dlfseeds.topdesk.net/tas/api/assetmgmt/assets/{topdesk_asset_id}/assignments",
-#                 auth=(topdesk_username, topdesk_password),
-#                 headers={
-#                     'Content-Type': 'application/json'
-#                 },
-#                 json={
-#                     "linkToId": topdesk_person_id,
-#                     "linkType": "person"
-#                 }
-#             )
-#
-#             return response
-#         else:
-#             print(f"User ID exists on Azure, but there is no Person card for it in TOPdesk.")
-#     else:
-#         print("No user assigned to this device!")
-#         return
+def assign_user_to_asset(person_card_id, asset_id):
+    response = make_request(
+        request_type=RequestType.PUT,
+        url=f"https://dlfseeds.topdesk.net/tas/api/assetmgmt/assets/{asset_id}/assignments",
+        auth=(topdesk_username, topdesk_password),
+        headers={
+            'Content-Type': 'application/json'
+        },
+        json={
+            "linkToId": person_card_id,
+            "linkType": "person"
+        }
+    )
 
+    if 200 <= response.status_code < 300:
+        print("Successfully assigned user to asset")
+    else:
+        error_message = f"Error {response.status_code}: {response.text}"
+        raise ValueError(error_message)
