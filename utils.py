@@ -155,11 +155,11 @@ def create_asset_for(platform, device, tkn):
     template_id = get_device_template(device)
 
     if platform == "intune":
+        userId = device.get('userId')
         json = generate_intune_asset_as_json(device, asset_name, template_id)
     else:
-
         userId = get_user_id_of_azure_device(device, tkn)
-        # json = generate_azure_asset_as_json(device, asset_name, template_id, userId)
+        json = generate_azure_asset_as_json(device, asset_name, template_id, userId)
 
     # response = make_request(
     #     request_type=RequestType.POST,
@@ -170,14 +170,20 @@ def create_asset_for(platform, device, tkn):
     #     },
     #     json=json
     # )
-
+    #
     # if 200 <= response.status_code < 300:
-    #     print("Asset successfully created")
+    #     asset_id = response.json().get('data').get('unid')
+    #     print(f"Successfully created the asset with ID:{asset_id}")
     # else:
     #     error_message = f"Error {response.status_code}: {response.text}"
     #     raise ValueError(error_message)
 
     # assign_user
+    if userId is None or userId == '':
+        return
+
+    topdesk_person_card_id = get_topdesk_user_id_by_mainframe(userId)
+    print(f"TOPdesk card ID: {topdesk_person_card_id}")
 
 def get_user_id_of_azure_device(device, tkn):
     response = make_request(
@@ -193,7 +199,7 @@ def get_user_id_of_azure_device(device, tkn):
         user = response.json().get('value')
         if len(user) == 0:
             print(f"No user for this device!")
-            return None
+            return ''
         else:
             user = user[0].get('id')
             print(f"User found: {user}")
@@ -202,22 +208,31 @@ def get_user_id_of_azure_device(device, tkn):
         error_message = f"Error {response.status_code}: {response.text}"
         raise ValueError(error_message)
 
-# def get_topdesk_user_id_by_mainframe(user_id):
-#     topdesk_person = make_request(
-#         request_type=RequestType.GET,
-#         url=f"https://dlfseeds.topdesk.net/tas/api/persons?query=mainframeLoginName=={user_id}",
-#         auth=(topdesk_username, topdesk_password),
-#         headers={
-#             'Content-Type': 'application/json'
-#         }
-#     )
-#
-#     try:
-#         if topdesk_person[0].get('status') != 'personArchived':
-#             return topdesk_person[0].get('id')
-#     except (AttributeError, KeyError, IndexError, TypeError):
-#         return None
+def get_topdesk_user_id_by_mainframe(user_id):
+    response = make_request(
+        request_type=RequestType.GET,
+        url=f"https://dlfseeds.topdesk.net/tas/api/persons?query=mainframeLoginName=={user_id}",
+        auth=(topdesk_username, topdesk_password),
+        headers={
+            'Content-Type': 'application/json'
+        }
+    )
 
+    if 200 <= response.status_code < 300:
+        if response.text != '':
+            print(response.json())
+
+            if len(response.json()) == 0:
+                return None
+
+            person_card = response.json()[0]
+            if person_card.get('status') != 'personArchived':
+                return person_card.get('id')
+            else:
+                return None
+    else:
+        error_message = f"Error {response.status_code}: {response.text}"
+        raise ValueError(error_message)
 
 # def assign_user_to_asset(dvc, topdesk_asset_id):
 #     if topdesk_asset_id is None:
