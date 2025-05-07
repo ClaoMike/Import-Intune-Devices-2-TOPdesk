@@ -35,11 +35,13 @@ for platform, next_devices_page_url in platforms.items():
             asset_name = generate_asset_name(platform, device)
 
             # search if the device already has an asset
-            topdesk_asset = search_for_topdesk_asset_by_asset_name(asset_name)
+            topdesk_asset_id = search_for_topdesk_asset_by_asset_name(asset_name)
+
             # if the device does have an asset:
-            if topdesk_asset:
-                print(f"Asset found")
+            if topdesk_asset_id:
+                print(f"Asset found: {topdesk_asset_id}")
                 # update device
+                update_asset(device, topdesk_asset_id, platform)
             # if the device does not have an asset
             else:
                 print(f"Asset not found")

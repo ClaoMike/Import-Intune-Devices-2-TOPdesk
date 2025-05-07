@@ -63,3 +63,22 @@ def search_for_topdesk_asset_by_asset_name(asset_name):
     else:
         error_message = f"Error {response.status_code}: {response.text}"
         raise ValueError(error_message)
+
+
+def get_asset_data(asset_id):
+    response = requests.get(
+        url=f"https://dlfseeds.topdesk.net/tas/api/assetmgmt/assets/{asset_id}",
+        auth=(topdesk_username, topdesk_password),
+        headers={
+            'Content-Type': 'application/json'
+        },
+    )
+
+    if 200 <= response.status_code < 300:
+        data = response.json().get('data')
+        print(f"Successfully retrieve the asset's data: {data}")
+
+        return data
+    else:
+        error_message = f"Error {response.status_code}: {response.text}"
+        raise ValueError(error_message)

@@ -3,6 +3,7 @@ import json
 from json_parsing import *
 from microsoft_methods import *
 from device_methods import *
+from comparisons import *
 
 def create_asset_for(platform, device, tkn):
     # create_asset
@@ -44,3 +45,15 @@ def create_asset_for(platform, device, tkn):
     print(f"TOPdesk card ID: {topdesk_person_card_id}")
 
     assign_user_to_asset(topdesk_person_card_id, asset_id)
+
+def update_asset(device, asset_id, platform):
+    asset_data = get_asset_data(asset_id)
+
+    is_asset_up_to_date = False
+
+    if platform == "intune":
+        is_asset_up_to_date = compare_device_with_intune(device, asset_data)
+        print(f"Equal? {is_asset_up_to_date}")
+        # compare users here
+    else:
+        pass
