@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 from utils import make_request, RequestType
 from env_variables import *
+import requests
+import json
 
 page_size = 500
 asset_counter = 1
 
-removable_assets_categories = [topdesk_computer_category_id, topdesk_mobile_category_id]
+removable_assets_categories = [topdesk_computer_category_id, topdesk_mobile_category_id, topdesk_device_category_id]
 for removable_asset_category in removable_assets_categories:
     page_start = 0
     while True:
@@ -23,7 +25,7 @@ for removable_asset_category in removable_assets_categories:
             }
         )
 
-        assets = response.get('dataSet', [])
+        assets = response.json().get('dataSet', [])
 
         if not assets:
             break

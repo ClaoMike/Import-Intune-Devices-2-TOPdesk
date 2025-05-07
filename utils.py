@@ -149,7 +149,7 @@ def get_device_template(device):
         print("New OS detected - please take action")
         return None
 
-def create_asset_for(platform, device):
+def create_asset_for(platform, device, tkn):
     # create_asset
     asset_name = generate_asset_name(platform, device)
     template_id = get_device_template(device)
@@ -157,8 +157,9 @@ def create_asset_for(platform, device):
     if platform == "intune":
         json = generate_intune_asset_as_json(device, asset_name, template_id)
     else:
-        userId = "N/A"
-        json = generate_azure_asset_as_json(device, asset_name, template_id, userId)
+
+        userId = get_user_id_of_azure_device(device, tkn)
+        # json = generate_azure_asset_as_json(device, asset_name, template_id, userId)
 
     response = make_request(
         request_type=RequestType.POST,
@@ -191,6 +192,7 @@ def get_user_id_of_azure_device(device, tkn):
 
     if 200 <= response.status_code < 300:
         print(f"User found: {response.json()}")
+        return response.json().get('value')[0].get('id')
     else:
         error_message = f"Error {response.status_code}: {response.text}"
         raise ValueError(error_message)

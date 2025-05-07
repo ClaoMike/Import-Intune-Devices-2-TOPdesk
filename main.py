@@ -8,7 +8,7 @@ access_token = get_access_token()
 start_time = time.time()
 
 platforms = {
-    "intune": "https://graph.microsoft.com/v1.0/deviceManagement/managedDevices",
+    # "intune": "https://graph.microsoft.com/v1.0/deviceManagement/managedDevices",
     "azure": "https://graph.microsoft.com/v1.0/devices"
 }
 
@@ -42,6 +42,6 @@ for platform, next_devices_page_url in platforms.items():
             else:
                 print(f"Asset not found")
                 # create asset with this device
-                create_asset_for(platform, device)
+                create_asset_for(platform, device, access_token)
 
             device_count += 1
