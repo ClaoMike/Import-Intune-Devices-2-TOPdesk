@@ -1,25 +1,10 @@
 import requests
 import json
 from operating_systems import *
-from env_variables import *
 from json_parsing import *
 from device_types import *
 from topdesk_methods import *
-
-def get_devices_from_curren_page(url, tkn):
-    response = requests.get(
-        url=url,
-        headers={
-            'Authorization': f'Bearer {tkn}',
-            'Content-Type': 'application/json'
-        },
-    )
-
-    if 200 <= response.status_code < 300:
-        return response.json().get('value'), response.json().get('@odata.nextLink')
-    else:
-        error_message = f"Error {response.status_code}: {response.text}"
-        raise ValueError(error_message)
+from microsoft_methods import *
 
 def get_device_type(operating_system: str):
     if operating_system in device_os:  # Skip these
@@ -97,26 +82,3 @@ def create_asset_for(platform, device, tkn):
     print(f"TOPdesk card ID: {topdesk_person_card_id}")
 
     assign_user_to_asset(topdesk_person_card_id, asset_id)
-
-def get_user_id_of_azure_device(device, tkn):
-    response = requests.get(
-        url=f"https://graph.microsoft.com/v1.0/devices/{device.get('id')}/registeredUsers",
-        headers={
-            'Authorization': f'Bearer {tkn}',
-            'Content-Type': 'application/json'
-        },
-    )
-
-    if 200 <= response.status_code < 300:
-        user = response.json().get('value')
-        if len(user) == 0:
-            print(f"No user for this device!")
-            return ''
-        else:
-            user = user[0].get('id')
-            print(f"User found: {user}")
-        return user
-    else:
-        error_message = f"Error {response.status_code}: {response.text}"
-        raise ValueError(error_message)
-
