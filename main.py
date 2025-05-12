@@ -31,7 +31,7 @@ for platform, next_devices_page_url in platforms.items():
         devices, next_devices_page_url = get_devices_from_curren_page(next_devices_page_url, access_token)
 
         for device in devices:
-            print(f"{device_count}. Device: {device}")
+            # print(f"{device_count}. Device: {device}")
             asset_name = generate_asset_name(platform, device)
 
             # search if the device already has an asset
@@ -44,7 +44,7 @@ for platform, next_devices_page_url in platforms.items():
                 update_asset(device, topdesk_asset_id, platform)
             # if the device does not have an asset
             else:
-                print(f"Asset not found")
+                print(f"Asset not found: {asset_name}")
                 # create asset with this device
                 create_asset_for(platform, device, access_token)
 

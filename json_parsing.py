@@ -1,5 +1,5 @@
 def generate_intune_asset_as_json(device, asset_name, template_id):
-    print(f"Creating TOPdesk asset with name: {asset_name}")
+    # print(f"Creating TOPdesk asset with name: {asset_name}")
 
     json = {
         "name": f"{asset_name}",  # asset id
@@ -30,7 +30,7 @@ def generate_intune_asset_as_json(device, asset_name, template_id):
     return json
 
 def generate_azure_asset_as_json(device, asset_name, template_id, userId):
-    print(f"Creating TOPdesk asset with name: {asset_name}")
+    # print(f"Creating TOPdesk asset with name: {asset_name}")
 
     json = {
         "name": f"{asset_name}",  # asset id
@@ -45,6 +45,17 @@ def generate_azure_asset_as_json(device, asset_name, template_id, userId):
         "last-check-in": device.get("approximateLastSignInDateTime"),
         "ismanaged": device.get("isManaged"),
         "compliance-status": device.get("isCompliant"),
+        "user-id": userId,
+    }
+
+    return json
+
+def generate_new_user_asset_data_as_json(asset_name, template_id, userId):
+    print(f"Updating TOPdesk asset with user: {userId}")
+
+    json = {
+        "name": f"{asset_name}",  # asset id
+        "type_id": template_id,  # asset template
         "user-id": userId,
     }
 

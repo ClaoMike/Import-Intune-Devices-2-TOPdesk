@@ -31,7 +31,7 @@ def get_topdesk_user_id_by_mainframe(user_id):
 
     if 200 <= response.status_code < 300:
         if response.text != '':
-            print(response.json())
+            # print(response.json())
 
             if len(response.json()) == 0:
                 return None
@@ -76,9 +76,58 @@ def get_asset_data(asset_id):
 
     if 200 <= response.status_code < 300:
         data = response.json().get('data')
-        print(f"Successfully retrieve the asset's data: {data}")
+        # print(f"Successfully retrieve the asset's data: {data}")
 
         return data
+    else:
+        error_message = f"Error {response.status_code}: {response.text}"
+        raise ValueError(error_message)
+
+def get_asset_assignment_link(asset_id):
+    response = requests.get(
+        url=f"https://dlfseeds.topdesk.net/tas/api/assetmgmt/assets/{asset_id}/assignments",
+        auth=(topdesk_username, topdesk_password),
+        headers={
+            'Content-Type': 'application/json'
+        },
+    )
+
+    if 200 <= response.status_code < 300:
+        try:
+            return response.json().get('persons')[0].get('linkId')
+        except:
+            return None
+    else:
+        error_message = f"Error {response.status_code}: {response.text}"
+        raise ValueError(error_message)
+
+def remove_asset_assignment_person(asset_id, link_id):
+    response = requests.delete(
+        url=f"https://dlfseeds.topdesk.net/tas/api/assetmgmt/assets/{asset_id}/assignments/{link_id}",
+        auth=(topdesk_username, topdesk_password),
+        headers={
+            'Content-Type': 'application/json'
+        },
+    )
+
+    if 200 <= response.status_code < 300:
+        print("Successfully deleted the assignment link!")
+    else:
+        error_message = f"Error {response.status_code}: {response.text}"
+        raise ValueError(error_message)
+
+def update_asset_data(asset_id, data):
+    response = requests.post(
+        url=f"https://dlfseeds.topdesk.net/tas/api/assetmgmt/assets/{asset_id}",
+        auth=(topdesk_username, topdesk_password),
+        headers={
+            'Content-Type': 'application/json'
+        },
+        json=data
+    )
+
+    if 200 <= response.status_code < 300:
+        print(f"Successfully updated the asset with ID:{asset_id}")
     else:
         error_message = f"Error {response.status_code}: {response.text}"
         raise ValueError(error_message)

@@ -68,9 +68,6 @@ def compare_device_with_intune(device, asset):
         debug_comparison("ownership", device.get("managedDeviceOwnerType"), asset.get("ownership"))
         return False
 
-    # if asset.get("user-id") != device.get("userId"):
-        # return False
-
     return True
 
 def compare_device_with_azure(user_id, device, asset):
