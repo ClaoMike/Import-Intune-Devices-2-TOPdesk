@@ -55,7 +55,7 @@ def update_asset(device, asset_id, platform):
     is_user_the_same = True
 
     if platform == "intune":
-        # is_asset_up_to_date = compare_device_with_intune(device, asset_data)
+        is_asset_up_to_date = compare_device_with_intune(device, asset_data)
         # print(f"Equal? {is_asset_up_to_date}")
         print()
         print(f"{asset_data.get('name')} vs. {asset_name}")
@@ -66,10 +66,10 @@ def update_asset(device, asset_id, platform):
             print(f"{asset_data.get('user-id')} vs. {device.get('userId')}")
             is_user_the_same = False
 
-        # if not is_asset_up_to_date:
-        #     updated_asset = generate_intune_asset_as_json(device, asset_name, template_id)
-        #     print(updated_asset)
-        #     update_asset_data(asset_id, updated_asset)
+        if not is_asset_up_to_date:
+            updated_asset = generate_intune_asset_as_json(device, asset_name, template_id)
+            print(updated_asset)
+            update_asset_data(asset_id, updated_asset)
 
         if not is_user_the_same:
             print("----------------------------------------------")
