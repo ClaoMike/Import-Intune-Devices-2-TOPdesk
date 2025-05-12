@@ -50,10 +50,32 @@ def update_asset(device, asset_id, platform):
     asset_data = get_asset_data(asset_id)
 
     is_asset_up_to_date = False
+    asset_name = generate_asset_name(platform, device)
+    template_id = get_device_template(device)
 
     if platform == "intune":
         is_asset_up_to_date = compare_device_with_intune(device, asset_data)
         print(f"Equal? {is_asset_up_to_date}")
+
+        if not is_asset_up_to_date:
+            updated_asset = generate_intune_asset_as_json(device, asset_name, template_id)
+            print(updated_asset)
+
+            response = requests.post(
+                url=f"https://dlfseeds.topdesk.net/tas/api/assetmgmt/assets/{asset_id}",
+                auth=(topdesk_username, topdesk_password),
+                headers={
+                    'Content-Type': 'application/json'
+                },
+                json=updated_asset
+            )
+
+            if 200 <= response.status_code < 300:
+                print(f"Successfully updated the asset with ID:{asset_id}")
+            else:
+                error_message = f"Error {response.status_code}: {response.text}"
+                raise ValueError(error_message)
+
         # compare users here
     else:
         pass
