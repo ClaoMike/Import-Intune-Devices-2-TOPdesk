@@ -11,7 +11,7 @@ start_time = time.time()
 
 platforms = {
     "intune": "https://graph.microsoft.com/v1.0/deviceManagement/managedDevices",
-    # "azure": "https://graph.microsoft.com/v1.0/devices"
+    "azure": "https://graph.microsoft.com/v1.0/devices"
 }
 
 device_count=1
@@ -41,7 +41,7 @@ for platform, next_devices_page_url in platforms.items():
             if topdesk_asset_id:
                 print(f"Asset found: {topdesk_asset_id}")
                 # update device
-                update_asset(device, topdesk_asset_id, platform)
+                update_asset(device, topdesk_asset_id, platform, access_token)
             # if the device does not have an asset
             else:
                 print(f"Asset not found: {asset_name}")

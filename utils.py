@@ -46,7 +46,7 @@ def create_asset_for(platform, device, tkn):
 
     assign_user_to_asset(topdesk_person_card_id, asset_id)
 
-def update_asset(device, asset_id, platform):
+def update_asset(device, asset_id, platform, tkn):
     asset_data = get_asset_data(asset_id)
     asset_name = generate_asset_name(platform, device)
     template_id = get_device_template(device)
@@ -57,43 +57,70 @@ def update_asset(device, asset_id, platform):
     if platform == "intune":
         is_asset_up_to_date = compare_device_with_intune(device, asset_data)
         # print(f"Equal? {is_asset_up_to_date}")
-        print()
-        print(f"{asset_data.get('name')} vs. {asset_name}")
-        print(f"{asset_data.get('user-id')} vs. {device.get('userId')}")
+        # print()
+        # print(f"{asset_data.get('name')} vs. {asset_name}")
+        # print(f"{asset_data.get('user-id')} vs. {device.get('userId')}")
 
         if asset_data.get("user-id") != device.get("userId"):
-            print("Not the same user!")
-            print(f"{asset_data.get('user-id')} vs. {device.get('userId')}")
+            # print("Not the same user!")
+            # print(f"{asset_data.get('user-id')} vs. {device.get('userId')}")
             is_user_the_same = False
 
         if not is_asset_up_to_date:
             updated_asset = generate_intune_asset_as_json(device, asset_name, template_id)
-            print(updated_asset)
+            # print(updated_asset)
             update_asset_data(asset_id, updated_asset)
 
         if not is_user_the_same:
-            print("----------------------------------------------")
-            print(asset_data)
-            print(device)
+            # print("----------------------------------------------")
+            # print(asset_data)
+            # print(device)
             # get current link
             link_id = get_asset_assignment_link(asset_id)
 
             if link_id is not None:
                 # remove link
                 remove_asset_assignment_person(asset_id, link_id)
-                print(f"Removing the link: {link_id}")
+                # print(f"Removing the link: {link_id}")
 
             # update asset with new user id (eventually empty)
             new_user_data = generate_new_user_asset_data_as_json(asset_name, template_id, device.get("userId"))
-            print(new_user_data)
+            # print(new_user_data)
             update_asset_data(asset_id, new_user_data)
 
             if device.get("userId") != '':
-                print("Adding the link")
+                # print("Adding the link")
                 person_card_id = get_topdesk_user_id_by_mainframe(device.get("userId"))
 
                 # link new user
                 assign_user_to_asset(person_card_id, asset_id)
-            print("===========================================")
+            # print("===========================================")
     else:
-        pass
+        is_asset_up_to_date = compare_device_with_azure(device, asset_data)
+        user_Id = get_user_id_of_azure_device(device, tkn)
+
+        if asset_data.get("user-id") != user_Id:
+            is_user_the_same = False
+
+        if not is_asset_up_to_date:
+            updated_asset = generate_azure_asset_as_json(device, asset_name, template_id, user_Id)
+            update_asset_data(asset_id, updated_asset)
+
+        if not is_user_the_same:
+            link_id = get_asset_assignment_link(asset_id)
+
+            if link_id is not None:
+                # remove link
+                remove_asset_assignment_person(asset_id, link_id)
+
+            # update asset with new user id (eventually empty)
+            new_user_data = generate_new_user_asset_data_as_json(asset_name, template_id, device.get("userId"))
+            update_asset_data(asset_id, new_user_data)
+
+            if user_Id != '':
+                person_card_id = get_topdesk_user_id_by_mainframe(user_Id)
+
+                print(person_card_id)
+
+                # link new user
+                assign_user_to_asset(person_card_id, asset_id)

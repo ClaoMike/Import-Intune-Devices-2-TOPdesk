@@ -70,40 +70,49 @@ def compare_device_with_intune(device, asset):
 
     return True
 
-def compare_device_with_azure(user_id, device, asset):
+def compare_device_with_azure(device, asset):
     if asset.get("name-1") != device.get("displayName"):
+        debug_comparison("displayName", device, asset)
         return False
 
     if asset.get("operating-system") != device.get('operatingSystem'):
+        debug_comparison('operatingSystem', device, asset)
         return False
 
     if asset.get("os-version") != device.get("operatingSystemVersion"):
+        debug_comparison("operatingSystemVersion", device, asset)
         return False
 
+    debug_comparison("registrationDateTime", device, asset)
     if not compare_device_and_asset_dates(
             device.get("registrationDateTime"),
             asset.get("enrollment-date")
     ):
+
         return False
 
+    debug_comparison("approximateLastSignInDateTime", device, asset)
     if not compare_device_and_asset_dates(
             device.get("approximateLastSignInDateTime"),
             asset.get("last-check-in")
     ):
+
         return False
 
     if asset.get("ismanaged") != device.get("isManaged"):
+        debug_comparison("isManaged", device, asset)
         return False
 
     if asset.get("compliance-status") != device.get("isCompliant"):
-        return False
-
-    if asset.get("user-id") != device.get(user_id):
+        debug_comparison("isCompliant", device, asset)
         return False
 
     return True
 
 def compare_device_and_asset_dates(device_date, asset_date):
+    if device_date is None or asset_date is None:
+        return device_date == asset_date
+
     t1 = datetime.fromisoformat(asset_date)
     t1 = t1.replace(tzinfo=timezone.utc)
 
