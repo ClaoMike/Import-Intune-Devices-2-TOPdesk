@@ -1,6 +1,6 @@
 import requests
-import json
 from env_variables import *
+import auth_state  # Import the global state module
 
 def get_access_token():
     response = requests.post(
@@ -18,7 +18,6 @@ def get_access_token():
 
     if 200 <= response.status_code < 300:
         print("Successfully obtained access token")
-        return response.json()['access_token']
+        auth_state.access_token = response.json()['access_token']
     else:
-        error_message = f"Error {response.status_code}: {response.text}"
-        raise ValueError(error_message)
+        raise ValueError(f"Error {response.status_code}: {response.text}")

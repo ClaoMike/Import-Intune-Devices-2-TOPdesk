@@ -1,10 +1,11 @@
 import requests
+import auth_state
 
-def get_devices_from_curren_page(url, tkn):
+def get_devices_from_curren_page(url):
     response = requests.get(
         url=url,
         headers={
-            'Authorization': f'Bearer {tkn}',
+            'Authorization': f'Bearer {auth_state.access_token}',
             'Content-Type': 'application/json'
         },
     )
@@ -15,11 +16,11 @@ def get_devices_from_curren_page(url, tkn):
         error_message = f"Error {response.status_code}: {response.text}"
         raise ValueError(error_message)
 
-def get_user_id_of_azure_device(device, tkn):
+def get_user_id_of_azure_device(device):
     response = requests.get(
         url=f"https://graph.microsoft.com/v1.0/devices/{device.get('id')}/registeredUsers",
         headers={
-            'Authorization': f'Bearer {tkn}',
+            'Authorization': f'Bearer {auth_state.access_token}',
             'Content-Type': 'application/json'
         },
     )
