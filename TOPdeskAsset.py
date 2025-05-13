@@ -1,0 +1,26 @@
+from typing import Optional
+
+class Device:
+    def __init__(self, data: dict):
+        self.name: Optional[str] = data.get("name")
+        self.intune_id: Optional[str] = data.get("intune-id")
+        self.azure_ad_registered: Optional[bool] = data.get("azure-ad-registered")
+        self.azure_id: Optional[str] = data.get("azure-id")
+        self.serial_number: Optional[str] = data.get("serial-number")
+        self.name_1: Optional[str] = data.get("name-1")
+        self.manufacturer_1: Optional[str] = data.get("manufacturer-1")
+        self.model_1: Optional[str] = data.get("model-1")
+        self.operating_system: Optional[str] = data.get("operating-system")
+        self.os_version: Optional[str] = data.get("os-version")
+        self.enrollment_date: Optional[str] = data.get("enrollment-date")
+        self.last_check_in: Optional[str] = data.get("last-check-in")
+        self.management_certificate_expiration_date: Optional[str] = data.get("management-certificate-expiration-date")
+        self.is_managed: Optional[bool] = data.get("ismanaged")
+        self.imei: Optional[str] = data.get("imei")
+        self.encrypted: Optional[bool] = data.get("encrypted")
+        self.subscriber_carrier: Optional[str] = data.get("subscriber-carrier")
+        self.total_storage: Optional[int] = data.get("total-storage")
+        self.storage: Optional[int] = data.get("storage")
+        self.compliance_status: Optional[str] = data.get("compliance-status")
+        self.ownership: Optional[str] = data.get("ownership")
+        self.user_id: Optional[str] = data.get("user-id")

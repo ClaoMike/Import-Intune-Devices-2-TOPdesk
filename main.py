@@ -14,6 +14,10 @@ platforms = {
     "azure": "https://graph.microsoft.com/v1.0/devices"
 }
 
+assets_that_should_stay = set()
+all_assets = set()
+assets_that_must_be_deleted = set()
+
 device_count=1
 for platform, next_devices_page_url in platforms.items():
     print(f"Platform: {platform}, URL: {next_devices_page_url}")
@@ -34,18 +38,46 @@ for platform, next_devices_page_url in platforms.items():
             # print(f"{device_count}. Device: {device}")
             asset_name = generate_asset_name(platform, device)
 
-            # search if the device already has an asset
-            topdesk_asset_id = search_for_topdesk_asset_by_asset_name(asset_name)
 
-            # if the device does have an asset:
-            if topdesk_asset_id:
-                print(f"Asset found: {topdesk_asset_id}")
-                # update device
-                update_asset(device, topdesk_asset_id, platform, access_token)
-            # if the device does not have an asset
-            else:
-                print(f"Asset not found: {asset_name}")
-                # create asset with this device
-                create_asset_for(platform, device, access_token)
+
+            # search if the device already has an asset
+            # topdesk_asset_id = search_for_topdesk_asset_by_asset_name(asset_name)
+            #
+            # # if the device does have an asset:
+            # if topdesk_asset_id:
+            #     print(f"Asset found: {topdesk_asset_id}")
+            #     # update device
+            #     update_asset(device, topdesk_asset_id, platform, access_token)
+            # # if the device does not have an asset
+            # else:
+            #     print(f"Asset not found: {asset_name}")
+            #     # create asset with this device
+            #     create_asset_for(platform, device, access_token)
+
+            # at this point, we know the asset exists
+            assets_that_should_stay.add(asset_name)
 
             device_count += 1
+
+# get all assets
+
+# response = requests.delete(
+#         url=f"https://dlfseeds.topdesk.net/tas/api/assetmgmt/assets/{asset_id}/assignments/{link_id}",
+#         auth=(topdesk_username, topdesk_password),
+#         headers={
+#             'Content-Type': 'application/json'
+#         },
+#     )
+#
+#     if 200 <= response.status_code < 300:
+#         print("Successfully deleted the assignment link!")
+#     else:
+#         error_message = f"Error {response.status_code}: {response.text}"
+#         raise ValueError(error_message)
+
+# all_assets = ...
+
+# get the assets that should be deleted
+assets_that_must_be_deleted = all_assets.difference(assets_that_should_stay)
+
+# delete them
