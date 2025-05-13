@@ -12,7 +12,7 @@ class IntuneDevice:
         self.compliance_state: Optional[str] = data.get("complianceState")
         self.os_version: Optional[str] = data.get("osVersion")
         self.azure_ad_registered: Optional[bool] = data.get("azureADRegistered")
-        self.azure_ad_device_id: Optional[str] = data.get("azureADDeviceId")
+        self.azure_ad_device_id: Optional[str] = data.get("azureADDeviceId") # this will be part of the TOPdesk ID
         self.is_supervised: Optional[bool] = data.get("isSupervised")
         self.is_encrypted: Optional[bool] = data.get("isEncrypted")
         self.model: Optional[str] = data.get("model")
@@ -23,4 +23,3 @@ class IntuneDevice:
         self.total_storage_space_in_bytes: Optional[int] = data.get("totalStorageSpaceInBytes")
         self.free_storage_space_in_bytes: Optional[int] = data.get("freeStorageSpaceInBytes")
         self.management_certificate_expiration_date: Optional[str] = data.get("managementCertificateExpirationDate")
-        self.udid: Optional[str] = data.get("udid")

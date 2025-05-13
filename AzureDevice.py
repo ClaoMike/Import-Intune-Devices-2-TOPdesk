@@ -2,9 +2,9 @@ from typing import Optional, List, Dict
 
 class AzureDevice:
     def __init__(self, data: dict):
-        self.id: Optional[str] = data.get("id")
         self.approximate_last_sign_in: Optional[str] = data.get("approximateLastSignInDateTime")
         self.compliance_expiration: Optional[str] = data.get("complianceExpirationDateTime")
+        self.device_id: Optional[str] = data.get("deviceId") # part of the TOPdesk ID
         self.display_name: Optional[str] = data.get("displayName")
         self.is_compliant: Optional[bool] = data.get("isCompliant")
         self.is_managed: Optional[bool] = data.get("isManaged")
