@@ -78,6 +78,24 @@ def delete_assets(assets):
             error_message = f"Error {response.status_code}: {response.text}"
             raise ValueError(error_message)
 
+def update_assets(assets):
+    for asset_id, (must_update_user, new_data) in assets.items():
+        print(f"{asset_id} → {must_update_user} → {new_data}")
+
+        if new_data is not None:
+            update_asset(asset_id, new_data)
+
+        # by this point, the asset has its user id update, see above
+        if must_update_user == True:
+            # unlink current person card, if any
+            link = get_asset_assignment_link(asset_id)
+            if link is not None:
+                remove_asset_assignment_person(asset_id, link)
+
+            # link new user
+            topdesk_person_card_id = get_topdesk_user_id_by_mainframe(new_data.get("user-id"))
+            assign_user(topdesk_person_card_id, asset_id)
+
 def filter_assets_and_devices(devices, assets):
     device_keys = set(devices.keys())
     asset_keys = set(assets.keys())
@@ -108,24 +126,6 @@ def filter_assets_and_devices(devices, assets):
     print(f"Assets to be updated: {len(assets_to_be_updated)}")
 
     return devices_to_create_list, assets_to_delete_list, assets_to_be_updated
-
-def update_assets(assets):
-    for asset_id, (must_update_user, new_data) in assets.items():
-        print(f"{asset_id} → {must_update_user} → {new_data}")
-
-        if new_data is not None:
-            update_asset(asset_id, new_data)
-
-        # by this point, the asset has its user id update, see above
-        if must_update_user == True:
-            # unlink current person card, if any
-            link = get_asset_assignment_link(asset_id)
-            if link is not None:
-                remove_asset_assignment_person(asset_id, link)
-
-            # link new user
-            topdesk_person_card_id = get_topdesk_user_id_by_mainframe(new_data.get("user-id"))
-            assign_user(topdesk_person_card_id, asset_id)
 
 def update_asset(asset_id, new_data):
     response = requests.post(

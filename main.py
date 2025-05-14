@@ -8,6 +8,4 @@ devices_to_create_list, assets_to_delete_list, assets_to_be_updated = filter_ass
     all_assets
 )
 
-# create_assets(devices_to_create_list)
-# delete_assets(assets_to_delete_list)
-update_assets(assets_to_be_updated)
+update_TOPdesk(devices_to_create_list, assets_to_delete_list, assets_to_be_updated)

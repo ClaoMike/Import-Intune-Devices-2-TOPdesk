@@ -4,10 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="8aba8601-9510-44b3-b625-41cec93fb9fc" name="Changes" comment="Refactor">
+    <list default="true" id="8aba8601-9510-44b3-b625-41cec93fb9fc" name="Changes" comment="Fix bug">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Device.py" beforeDir="false" afterPath="$PROJECT_DIR$/Device.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/topdesk_methods.py" beforeDir="false" afterPath="$PROJECT_DIR$/topdesk_methods.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -94,15 +95,7 @@
       <workItem from="1746599372844" duration="18101000" />
       <workItem from="1746620416876" duration="6014000" />
       <workItem from="1747030405188" duration="25115000" />
-      <workItem from="1747118928711" duration="49138000" />
-    </task>
-    <task id="LOCAL-00020" summary="Creating Intune assets">
-      <option name="closed" value="true" />
-      <created>1746533564920</created>
-      <option name="number" value="00020" />
-      <option name="presentableId" value="LOCAL-00020" />
-      <option name="project" value="LOCAL" />
-      <updated>1746533564920</updated>
+      <workItem from="1747118928711" duration="50012000" />
     </task>
     <task id="LOCAL-00021" summary="Creating Azure assets">
       <option name="closed" value="true" />
@@ -488,14 +481,21 @@
       <option name="project" value="LOCAL" />
       <updated>1747232858613</updated>
     </task>
-    <option name="localTasksCounter" value="69" />
+    <task id="LOCAL-00069" summary="Fix bug">
+      <option name="closed" value="true" />
+      <created>1747233776030</created>
+      <option name="number" value="00069" />
+      <option name="presentableId" value="LOCAL-00069" />
+      <option name="project" value="LOCAL" />
+      <updated>1747233776030</updated>
+    </task>
+    <option name="localTasksCounter" value="70" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Remove useless data" />
     <MESSAGE value="Now we know which one is the Azure ID" />
     <MESSAGE value="Shared access token across all modules" />
     <MESSAGE value="Concurrently fetching Intune and Azure" />
@@ -520,14 +520,15 @@
     <MESSAGE value="Updating assets" />
     <MESSAGE value="Updating assets - unlinking current user" />
     <MESSAGE value="Refactor" />
-    <option name="LAST_COMMIT_MESSAGE" value="Refactor" />
+    <MESSAGE value="Fix bug" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fix bug" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/PythonProject6$Device.coverage" NAME="Device Coverage Results" MODIFIED="1747233139136" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/PythonProject6$main.coverage" NAME="main Coverage Results" MODIFIED="1747233467916" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/PythonProject6$main.coverage" NAME="main Coverage Results" MODIFIED="1747233568689" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/PythonProject6$utils.coverage" NAME="utils Coverage Results" MODIFIED="1746626442203" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/PythonProject6$second_main.coverage" NAME="second_main Coverage Results" MODIFIED="1747215191481" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/PythonProject6$clear_devices_from_topdesk.coverage" NAME="clear_devices_from_topdesk Coverage Results" MODIFIED="1747230057873" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/PythonProject6$clear_devices_from_topdesk.coverage" NAME="clear_devices_from_topdesk Coverage Results" MODIFIED="1747233967231" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/PythonProject6$operating_systems.coverage" NAME="operating_systems Coverage Results" MODIFIED="1746005505012" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>
