@@ -1,6 +1,7 @@
 import requests
 from env_variables import *
 from TOPdeskAsset import TOPdeskAsset
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 def fetch_all_assets(template_id, page_size=1000):
     all_assets = []
@@ -48,12 +49,25 @@ def fetch_all_assets(template_id, page_size=1000):
     return all_assets
 
 def create_assets(devices):
-    if len(devices) != 0:
-        print(f"Creating assets for {len(devices)} devices")
+    if not devices:
+        return
 
-        for device in devices:
-            device.create_in_TOPdesk()
-            device.assign_user()
+    print(f"Creating assets for {len(devices)} devices")
+
+    def create_and_assign(device):
+        device.create_in_TOPdesk()
+        device.assign_user()
+        return device.topdesk_asset_name
+
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        futures = {executor.submit(create_and_assign, device): device for device in devices}
+
+        for future in as_completed(futures):
+            device = futures[future]
+            try:
+                future.result()
+            except Exception as e:
+                print(f"[✗] Failed to create asset for device: {device.topdesk_asset_name} → {e}")
 
 def delete_assets(assets):
     if len(assets) != 0:
