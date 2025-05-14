@@ -1,41 +1,46 @@
 #!/usr/bin/env python3
 import authentication
-import auth_state
-
-from utils import *
-import time
 from microsoft_methods import *
-from device_methods import *
-from AzureDevice import *
-from IntuneDevice import *
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
+# Platform endpoints
 platforms = {
     "intune": "https://graph.microsoft.com/v1.0/deviceManagement/managedDevices",
     "azure": "https://graph.microsoft.com/v1.0/devices"
 }
-devices = []
 
-# get the intune access token, it lasts for 3599 seconds, so we have to re-get it if an hour passes
+# Initialize auth
 authentication.get_access_token()
-start_time = time.time()
 
-for platform, next_devices_page_url in platforms.items():
-    print(f"Platform: {platform}, URL: {next_devices_page_url}")
+# Containers
+devices = []
+azure_devices = []
+intune_devices = []
 
-    while next_devices_page_url:
-        end_time = time.time()
-        elapsed_seconds = end_time - start_time
+# Run fetches in parallel
+with ThreadPoolExecutor(max_workers=2) as executor:
+    futures = {
+        executor.submit(fetch_all_devices_from_platform, platform, url): platform
+        for platform, url in platforms.items()
+    }
 
-        if elapsed_seconds > 3000:
-            authentication.get_access_token()
-            start_time = time.time()
+    for future in as_completed(futures):
+        platform = futures[future]
+        try:
+            platform_devices = future.result()
+            print(f"Finished loading {len(platform_devices)} {platform} devices.")
 
-        current_page_devices, next_devices_page_url = get_devices_from_curren_page(next_devices_page_url)
+            if platform == "azure":
+                azure_devices.extend(platform_devices)
+            elif platform == "intune":
+                intune_devices.extend(platform_devices)
 
-        for device in current_page_devices:
-            if platforms == "intune":
-                devices.append(IntuneDevice(device))
-            else:
-                devices.append(AzureDevice(device))
+        except Exception as e:
+            print(f"Error while loading {platform} devices: {e}")
 
+# Combine all devices if needed
+devices = azure_devices + intune_devices
 print(len(devices))
+# count = 0
+# for device in devices:
+#     print(f"{count}. {device.user_id}")

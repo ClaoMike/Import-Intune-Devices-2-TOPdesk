@@ -1,10 +1,12 @@
 from typing import Optional, List, Dict
-from microsoft_methods import *
+import microsoft_methods
 
 class AzureDevice:
     def __init__(self, data: dict):
         # extract relevant data
         self.device_id: Optional[str] = data.get("deviceId")  # part of the TOPdesk ID
+
+        self.id = data.get("id")
 
         self.approximate_last_sign_in: Optional[str] = data.get("approximateLastSignInDateTime")
         self.compliance_expiration: Optional[str] = data.get("complianceExpirationDateTime")
@@ -17,6 +19,6 @@ class AzureDevice:
         self.operating_system_version: Optional[str] = data.get("operatingSystemVersion")
         self.registration_date_time: Optional[str] = data.get("registrationDateTime")
 
-        # assign user
-        # entra_id = data.get("id")
-        # self.user_id: Optional[str] = get_user_id_of_azure_device(entra_id)
+        # self.user_id: Optional[str] = microsoft_methods.get_user_id_of_azure_device(entra_id)
+
+# deviceId,approximateLastSignInDateTime,complianceExpirationDateTime,displayName,isCompliant,isManaged,manufacturer,model,operatingSystem,operatingSystemVersion,registrationDateTime
