@@ -34,10 +34,16 @@ def fetch_devices_and_assets_in_parallel():
         # Wait for devices
         devices = device_future.result()
 
+    # Transforming the assets into dictionary as well
+    all_assets_as_dict = {}
+    for asset in all_assets:
+        if asset.name:
+            all_assets_as_dict[asset.name] = asset
+
     print(f"\n[✓] Total assets fetched: {len(all_assets)}")
     print(f"[✓] Total devices fetched: {len(devices)}")
 
-    return devices, all_assets
+    return devices, all_assets_as_dict
 
 # def create_asset_for(platform, device, tkn):
 #     # create_asset
