@@ -143,6 +143,17 @@ def fetch_devices():
     for azure_device in azure_devices:
         azure_device.user_id = azure_user_map.get(azure_device.id)
 
-    all_devices = azure_devices + intune_devices
+    all_devices = {}
+
+    # ORDER IS VERY IMPORTANT HERE< AZURE FIRST< INTUNE AFTER, INTUNE MUST OVERWRITE SOME OF AZURE
+    # Add Azure devices
+    for device in azure_devices:
+        if device.topdesk_asset_name:
+            all_devices[device.topdesk_asset_name] = device
+
+    # Add Intune devices (overwrites if name matches)
+    for device in intune_devices:
+        if device.topdesk_asset_name:
+            all_devices[device.topdesk_asset_name] = device
 
     return all_devices
