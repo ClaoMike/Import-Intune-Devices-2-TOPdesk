@@ -42,26 +42,6 @@ def get_devices_from_curren_page(url):
         error_message = f"Error {response.status_code}: {response.text}"
         raise ValueError(error_message)
 
-def get_user_id_of_azure_device(device_id):
-    response = requests.get(
-        url=f"https://graph.microsoft.com/v1.0/devices/{device_id}/registeredUsers",
-        headers={
-            'Authorization': f'Bearer {auth_state.access_token}',
-            'Content-Type': 'application/json'
-        },
-    )
-
-    if 200 <= response.status_code < 300:
-        user = response.json().get('value')
-        if len(user) == 0:
-            return None
-        else:
-            user = user[0].get('id')
-        return user
-    else:
-        error_message = f"Error {response.status_code}: {response.text}"
-        raise ValueError(error_message)
-
 def batch_get_registered_users(device_ids):
     url = "https://graph.microsoft.com/v1.0/$batch"
     headers = {
@@ -84,11 +64,8 @@ def batch_get_registered_users(device_ids):
         chunk = requests_payload[i:i+20]
         _json = {"requests": chunk}
 
-        # print(_json)
         response = requests.post(url, headers=headers, json=_json)
         data = response.json()
-
-        # print(data)
 
         for item in data.get("responses", []):
             dev_id = item.get("id")
@@ -102,3 +79,23 @@ def batch_get_registered_users(device_ids):
             else:
                 all_results[dev_id] = None  # or log error
     return all_results
+
+# def get_user_id_of_azure_device(device_id):
+#     response = requests.get(
+#         url=f"https://graph.microsoft.com/v1.0/devices/{device_id}/registeredUsers",
+#         headers={
+#             'Authorization': f'Bearer {auth_state.access_token}',
+#             'Content-Type': 'application/json'
+#         },
+#     )
+#
+#     if 200 <= response.status_code < 300:
+#         user = response.json().get('value')
+#         if len(user) == 0:
+#             return None
+#         else:
+#             user = user[0].get('id')
+#         return user
+#     else:
+#         error_message = f"Error {response.status_code}: {response.text}"
+#         raise ValueError(error_message)
