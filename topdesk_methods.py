@@ -47,6 +47,10 @@ def fetch_all_assets(template_id, page_size=1000):
 
     return all_assets
 
+def create_assets(assets):
+    for asset in assets:
+        asset.create_in_TOPdesk()
+
 # def assign_user_to_asset(person_card_id, asset_id):
 #     response = requests.put(
 #         url=f"https://dlfseeds.topdesk.net/tas/api/assetmgmt/assets/{asset_id}/assignments",

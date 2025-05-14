@@ -6,8 +6,7 @@ class AzureDevice(Device):
 
         # extract relevant data
         self.device_id: Optional[str] = data.get("deviceId")  # part of the TOPdesk ID
-
-        self.id = data.get("id")
+        self.id = data.get("id") # needed to fetch the user ID !!
 
         self.approximate_last_sign_in: Optional[str] = data.get("approximateLastSignInDateTime")
         self.compliance_expiration: Optional[str] = data.get("complianceExpirationDateTime")
