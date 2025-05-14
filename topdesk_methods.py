@@ -92,23 +92,58 @@ def delete_assets(assets):
             error_message = f"Error {response.status_code}: {response.text}"
             raise ValueError(error_message)
 
+# def update_assets(assets):
+#     for asset_id, (must_update_user, new_data) in assets.items():
+#         print(f"{asset_id} → {must_update_user} → {new_data}")
+#
+#         if new_data is not None:
+#             update_asset(asset_id, new_data)
+#
+#         # by this point, the asset has its user id update, see above
+#         if must_update_user == True:
+#             # unlink current person card, if any
+#             link = get_asset_assignment_link(asset_id)
+#             if link is not None:
+#                 remove_asset_assignment_person(asset_id, link)
+#
+#             # link new user
+#             topdesk_person_card_id = get_topdesk_user_id_by_mainframe(new_data.get("user-id"))
+#             assign_user(topdesk_person_card_id, asset_id)
+
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
 def update_assets(assets):
-    for asset_id, (must_update_user, new_data) in assets.items():
-        print(f"{asset_id} → {must_update_user} → {new_data}")
+    print(f"Updating {len(assets)} assets...")
 
-        if new_data is not None:
-            update_asset(asset_id, new_data)
+    def process_update(asset_id, must_update_user, new_data):
+        try:
+            if new_data is not None:
+                update_asset(asset_id, new_data)
 
-        # by this point, the asset has its user id update, see above
-        if must_update_user == True:
-            # unlink current person card, if any
-            link = get_asset_assignment_link(asset_id)
-            if link is not None:
-                remove_asset_assignment_person(asset_id, link)
+            if must_update_user:
+                # unlink current person card, if any
+                link = get_asset_assignment_link(asset_id)
+                if link is not None:
+                    remove_asset_assignment_person(asset_id, link)
 
-            # link new user
-            topdesk_person_card_id = get_topdesk_user_id_by_mainframe(new_data.get("user-id"))
-            assign_user(topdesk_person_card_id, asset_id)
+                # link new user
+                new_user_id = new_data.get("user-id")
+                topdesk_person_card_id = get_topdesk_user_id_by_mainframe(new_user_id)
+                assign_user(topdesk_person_card_id, asset_id)
+
+            return f"[✓] Updated asset {asset_id}"
+        except Exception as e:
+            return f"[✗] Failed to update {asset_id}: {e}"
+
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        futures = {
+            executor.submit(process_update, asset_id, must_update_user, new_data): asset_id
+            for asset_id, (must_update_user, new_data) in assets.items()
+        }
+
+        for future in as_completed(futures):
+            print(future.result())
+
 
 def filter_assets_and_devices(devices, assets):
     device_keys = set(devices.keys())
