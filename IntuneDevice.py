@@ -28,4 +28,4 @@ class IntuneDevice(Device):
         self.free_storage_space_in_bytes: Optional[int] = data.get("freeStorageSpaceInBytes")
         self.management_certificate_expiration_date: Optional[str] = data.get("managementCertificateExpirationDate")
 
-        self.user_id = data.get("userId")
+        self.user_id = data.get("userId") if data.get("userId") != "" else None
