@@ -1,5 +1,4 @@
-from typing import Optional, List
-from Device import Device
+from Device import *
 
 class IntuneDevice(Device):
     def __init__(self, data: dict):
@@ -28,4 +27,11 @@ class IntuneDevice(Device):
         self.free_storage_space_in_bytes: Optional[int] = data.get("freeStorageSpaceInBytes")
         self.management_certificate_expiration_date: Optional[str] = data.get("managementCertificateExpirationDate")
 
+        # assing user
         self.user_id = data.get("userId") if data.get("userId") != "" else None
+
+        # compute the topdesk asset name
+        self.topdesk_asset_name = Device.compute_topdesk_asset_name(
+            os=self.operating_system,
+            device_id=self.azure_ad_device_id
+        )

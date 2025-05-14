@@ -139,6 +139,7 @@ def fetch_devices():
     print(f"Intune Devices: {len(intune_devices)}")
     print(f"Azure Devices with User IDs: {len(azure_user_map)}")
 
+    # assing users for azure devices
     for azure_device in azure_devices:
         azure_device.user_id = azure_user_map.get(azure_device.id)
 

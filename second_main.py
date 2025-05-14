@@ -3,5 +3,7 @@ from microsoft_methods import *
 
 devices = fetch_devices()
 
-for device in devices:
-    print(device.user_id)
+# for device in devices:
+#     print(device.topdesk_asset_name)
+
+# print(len(devices))

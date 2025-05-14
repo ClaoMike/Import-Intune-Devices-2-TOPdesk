@@ -1,18 +1,7 @@
-import json
+# import json
 from operating_systems import *
-from topdesk_methods import *
+# from topdesk_methods import *
 from device_types import *
-
-def get_device_type(operating_system: str):
-    if operating_system in device_os:  # Skip these
-        return DeviceType.DEVICE
-    elif operating_system in computer_os:
-        return DeviceType.COMPUTER
-    elif operating_system in mobile_os:
-        return DeviceType.MOBILE
-    else:
-        print("New OS detected - please take action")
-        return None
 
 def generate_asset_name(platform, device):
     if platform == "intune":

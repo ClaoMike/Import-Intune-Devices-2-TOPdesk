@@ -1,5 +1,4 @@
-from typing import Optional, List, Dict
-from Device import Device
+from Device import *
 
 class AzureDevice(Device):
     def __init__(self, data: dict):
@@ -21,4 +20,8 @@ class AzureDevice(Device):
         self.operating_system_version: Optional[str] = data.get("operatingSystemVersion")
         self.registration_date_time: Optional[str] = data.get("registrationDateTime")
 
-        # self.user_id: Optional[str] = microsoft_methods.get_user_id_of_azure_device(entra_id)
+        # compute the topdesk asset name
+        self.topdesk_asset_name = Device.compute_topdesk_asset_name(
+            os=self.operating_system,
+            device_id=self.device_id
+        )
