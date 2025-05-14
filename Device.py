@@ -1,8 +1,7 @@
 from typing import Optional, List, Dict
 from enum import Enum
 from operating_systems import *
-
-
+from env_variables import *
 
 class Device:
     class Type(Enum):
@@ -13,7 +12,7 @@ class Device:
         MOBILE = "MOBILE"
         DEVICE = "DEVICE"
 
-    def __init__(self):
+    def __init__(self, data):
         # extract relevant data
         self.user_id: Optional[str] = None
         self.topdesk_asset_name: Optional[str] = None
@@ -30,6 +29,18 @@ class Device:
             return Device.Type.COMPUTER
         elif operating_system in mobile_os:
             return Device.Type.MOBILE
+        else:
+            print("New OS detected - please take action")
+            return None
+
+    @staticmethod
+    def get_device_template(type: Type):
+        if type is Device.Type.DEVICE:
+            return topdesk_device_category_id
+        elif type is Device.Type.COMPUTER:
+            return topdesk_computer_category_id
+        elif type is Device.Type.MOBILE:
+            return topdesk_mobile_category_id
         else:
             print("New OS detected - please take action")
             return None

@@ -4,14 +4,14 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="8aba8601-9510-44b3-b625-41cec93fb9fc" name="Changes" comment="Assets as dictionary">
+    <list default="true" id="8aba8601-9510-44b3-b625-41cec93fb9fc" name="Changes" comment="Ordered the attributes">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/AzureDevice.py" beforeDir="false" afterPath="$PROJECT_DIR$/AzureDevice.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Device.py" beforeDir="false" afterPath="$PROJECT_DIR$/Device.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/IntuneDevice.py" beforeDir="false" afterPath="$PROJECT_DIR$/IntuneDevice.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/second_main.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/device_methods.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/json_parsing.py" beforeDir="false" afterPath="$PROJECT_DIR$/json_parsing.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/topdesk_methods.py" beforeDir="false" afterPath="$PROJECT_DIR$/topdesk_methods.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -97,15 +97,7 @@
       <workItem from="1746599372844" duration="18101000" />
       <workItem from="1746620416876" duration="6014000" />
       <workItem from="1747030405188" duration="25115000" />
-      <workItem from="1747118928711" duration="33483000" />
-    </task>
-    <task id="LOCAL-00008" summary="More refactoring">
-      <option name="closed" value="true" />
-      <created>1745996639531</created>
-      <option name="number" value="00008" />
-      <option name="presentableId" value="LOCAL-00008" />
-      <option name="project" value="LOCAL" />
-      <updated>1745996639531</updated>
+      <workItem from="1747118928711" duration="36039000" />
     </task>
     <task id="LOCAL-00009" summary="More refactoring">
       <option name="closed" value="true" />
@@ -491,14 +483,21 @@
       <option name="project" value="LOCAL" />
       <updated>1747214482732</updated>
     </task>
-    <option name="localTasksCounter" value="57" />
+    <task id="LOCAL-00057" summary="Ordered the attributes">
+      <option name="closed" value="true" />
+      <created>1747217896681</created>
+      <option name="number" value="00057" />
+      <option name="presentableId" value="LOCAL-00057" />
+      <option name="project" value="LOCAL" />
+      <updated>1747217896681</updated>
+    </task>
+    <option name="localTasksCounter" value="58" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Deleting devices as well" />
     <MESSAGE value="Fetching the user ID for all Azure devices" />
     <MESSAGE value="Fetching the person card id" />
     <MESSAGE value="Creating assets is done" />
@@ -523,10 +522,11 @@
     <MESSAGE value="Some refactor" />
     <MESSAGE value="Devices as dictionary" />
     <MESSAGE value="Assets as dictionary" />
-    <option name="LAST_COMMIT_MESSAGE" value="Assets as dictionary" />
+    <MESSAGE value="Ordered the attributes" />
+    <option name="LAST_COMMIT_MESSAGE" value="Ordered the attributes" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/PythonProject6$main.coverage" NAME="main Coverage Results" MODIFIED="1747217615081" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/PythonProject6$main.coverage" NAME="main Coverage Results" MODIFIED="1747217800775" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/PythonProject6$utils.coverage" NAME="utils Coverage Results" MODIFIED="1746626442203" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/PythonProject6$second_main.coverage" NAME="second_main Coverage Results" MODIFIED="1747215191481" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/PythonProject6$clear_devices_from_topdesk.coverage" NAME="clear_devices_from_topdesk Coverage Results" MODIFIED="1747216516231" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />

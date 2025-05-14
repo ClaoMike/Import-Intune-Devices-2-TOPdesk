@@ -9,7 +9,6 @@ class AzureDevice(Device):
         self.id = data.get("id") # needed to fetch the user ID !!
 
         self.approximate_last_sign_in: Optional[str] = data.get("approximateLastSignInDateTime")
-        self.compliance_expiration: Optional[str] = data.get("complianceExpirationDateTime")
         self.display_name: Optional[str] = data.get("displayName")
         self.is_compliant: Optional[bool] = data.get("isCompliant")
         self.is_managed: Optional[bool] = data.get("isManaged")
@@ -19,8 +18,30 @@ class AzureDevice(Device):
         self.operating_system_version: Optional[str] = data.get("operatingSystemVersion")
         self.registration_date_time: Optional[str] = data.get("registrationDateTime")
 
+        self.device_type: Optional[Device.Type] = Device.get_device_type(
+            operating_system=self.operating_system
+        )
+
         # compute the topdesk asset name
         self.topdesk_asset_name = Device.compute_topdesk_asset_name(
             os=self.operating_system,
             device_id=self.device_id
         )
+
+    def to_JSON(self):
+        return {
+            "name": self.topdesk_asset_name,  # asset id
+            "type_id": Device.get_device_template(self.device_type),  # asset template
+
+            "azure-id": self.device_id,
+            "last-check-in": self.approximate_last_sign_in,
+            "name-1": self.display_name,
+            "compliance-status": self.is_compliant,
+            "ismanaged": self.is_managed,
+            "manufacturer-1": self.manufacturer,
+            "model-1": self.model,
+            "operating-system": self.operating_system,
+            "os-version": self.operating_system_version,
+            "enrollment-date": self.registration_date_time,
+            "user-id": self.user_id,
+        }
