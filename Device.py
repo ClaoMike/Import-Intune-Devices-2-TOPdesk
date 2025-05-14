@@ -2,6 +2,7 @@ from typing import Optional, List, Dict
 from enum import Enum
 from operating_systems import *
 from env_variables import *
+import requests
 
 class Device:
     class Type(Enum):
@@ -12,10 +13,30 @@ class Device:
         MOBILE = "MOBILE"
         DEVICE = "DEVICE"
 
-    def __init__(self, data):
+    def __init__(self):
         # extract relevant data
         self.user_id: Optional[str] = None
         self.topdesk_asset_name: Optional[str] = None
+        self.asset_id: Optional[str] = None
+
+    def to_JSON(self):
+        return None
+
+    def create_in_TOPdesk(self):
+        response = requests.post(
+            url="https://dlfseeds.topdesk.net/tas/api/assetmgmt/assets",
+            auth=(topdesk_username, topdesk_password),
+            headers={
+                'Content-Type': 'application/json'
+            },
+            json=self.to_JSON()
+        )
+
+        if 200 <= response.status_code < 300:
+            self.asset_id = response.json().get('data').get('unid')
+        else:
+            error_message = f"Error {response.status_code}: {response.text}"
+            raise ValueError(error_message)
 
     @staticmethod
     def compute_topdesk_asset_name(os: str, device_id: str) -> str:

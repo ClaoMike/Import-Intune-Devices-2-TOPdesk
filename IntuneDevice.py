@@ -1,6 +1,4 @@
 from Device import *
-import requests
-from env_variables import *
 
 class IntuneDevice(Device):
     def __init__(self, data: dict):
@@ -43,47 +41,31 @@ class IntuneDevice(Device):
             device_id=self.azure_ad_device_id
         )
 
-        def to_JSON(self):
-            return {
-                "name": self.topdesk_asset_name,  # asset id
-                "type_id": Device.get_device_template(self.device_type),  # asset template
+    def to_JSON(self):
+        return {
+            "name": self.topdesk_asset_name,  # asset id
+            "type_id": Device.get_device_template(self.device_type),  # asset template
 
-                "azure-ad-registered": self.azure_ad_registered,
-                "azure-id": self.azure_ad_device_id,
-                "compliance-status": self.compliance_state,
-                "enrollment-date": self.enrolled_date_time,
-                "storage": self.free_storage_space_in_bytes,
-                "name-1": self.device_name,
-                "intune-id": self.id,
-                "imei": self.imei,
-                "encrypted": self.is_encrypted,
-                "ismanaged": self.is_supervised,
-                "last-check-in": self.last_sync_date_time,
-                "ownership": self.managed_device_owner_type,
-                "management-certificate-expiration-date": self.management_certificate_expiration_date,
-                "manufacturer-1": self.manufacturer,
-                "model-1": self.model,
-                "operating-system": self.operating_system,
-                "os-version": self.os_version,
-                "serial-number": self.serial_number,
-                "subscriber-carrier": self.subscriber_carrier,
-                "total-storage": self.total_storage_space_in_bytes,
-                "user-id": self.user_id,
-            }
+            "azure-ad-registered": self.azure_ad_registered,
+            "azure-id": self.azure_ad_device_id,
+            "compliance-status": self.compliance_state,
+            "enrollment-date": self.enrolled_date_time,
+            "storage": self.free_storage_space_in_bytes,
+            "name-1": self.device_name,
+            "intune-id": self.id,
+            "imei": self.imei,
+            "encrypted": self.is_encrypted,
+            "ismanaged": self.is_supervised,
+            "last-check-in": self.last_sync_date_time,
+            "ownership": self.managed_device_owner_type,
+            "management-certificate-expiration-date": self.management_certificate_expiration_date,
+            "manufacturer-1": self.manufacturer,
+            "model-1": self.model,
+            "operating-system": self.operating_system,
+            "os-version": self.os_version,
+            "serial-number": self.serial_number,
+            "subscriber-carrier": self.subscriber_carrier,
+            "total-storage": self.total_storage_space_in_bytes,
+            "user-id": self.user_id,
+        }
 
-        # def create_in_TOPdesk(self):
-        #     response = requests.post(
-        #         url="https://dlfseeds.topdesk.net/tas/api/assetmgmt/assets",
-        #         auth=(topdesk_username, topdesk_password),
-        #         headers={
-        #             'Content-Type': 'application/json'
-        #         },
-        #         json=json
-        #     )
-        #
-        #     if 200 <= response.status_code < 300:
-        #         asset_id = response.json().get('data').get('unid')
-        #         print(f"Successfully created the asset with ID:{asset_id}")
-        #     else:
-        #         error_message = f"Error {response.status_code}: {response.text}"
-        #         raise ValueError(error_message)

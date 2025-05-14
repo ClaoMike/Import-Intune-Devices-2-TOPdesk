@@ -1,9 +1,8 @@
 import requests
 import json
-from json_parsing import *
 from microsoft_methods import *
-from device_methods import *
 from comparisons import *
+from topdesk_methods import *
 
 def fetch_devices_and_assets_in_parallel():
     all_assets = []
