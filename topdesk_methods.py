@@ -118,12 +118,14 @@ def update_assets(assets):
 
         # by this point, the asset has its user id update, see above
         if must_update_user == True:
-            # unlink current person card
+            # unlink current person card, if any
             link = get_asset_assignment_link(asset_id)
-            remove_asset_assignment_person(asset_id, link)
+            if link is not None:
+                remove_asset_assignment_person(asset_id, link)
 
             # link new user
             topdesk_person_card_id = get_topdesk_user_id_by_mainframe(new_data.get("user-id"))
+            assign_user(topdesk_person_card_id, asset_id)
 
 def update_asset(asset_id, new_data):
     response = requests.post(
@@ -192,6 +194,25 @@ def get_topdesk_user_id_by_mainframe(user_id):
                 return person_card.get('id')
             else:
                 return None
+    else:
+        error_message = f"Error {response.status_code}: {response.text}"
+        raise ValueError(error_message)
+
+def assign_user(topdesk_person_card_id, asset_id):
+    response = requests.put(
+        url=f"https://dlfseeds.topdesk.net/tas/api/assetmgmt/assets/{asset_id}/assignments",
+        auth=(topdesk_username, topdesk_password),
+        headers={
+            'Content-Type': 'application/json'
+        },
+        json={
+            "linkToId": topdesk_person_card_id,
+            "linkType": "person"
+        }
+    )
+
+    if 200 <= response.status_code < 300:
+        return
     else:
         error_message = f"Error {response.status_code}: {response.text}"
         raise ValueError(error_message)

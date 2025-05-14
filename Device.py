@@ -43,26 +43,8 @@ class Device:
     def assign_user(self):
         self.topdesk_person_card_id = get_topdesk_user_id_by_mainframe(self.user_id)
 
-        if self.topdesk_person_card_id is None:
-            return
-
-        response = requests.put(
-            url=f"https://dlfseeds.topdesk.net/tas/api/assetmgmt/assets/{self.asset_id}/assignments",
-            auth=(topdesk_username, topdesk_password),
-            headers={
-                'Content-Type': 'application/json'
-            },
-            json={
-                "linkToId": self.topdesk_person_card_id,
-                "linkType": "person"
-            }
-        )
-
-        if 200 <= response.status_code < 300:
-            return
-        else:
-            error_message = f"Error {response.status_code}: {response.text}"
-            raise ValueError(error_message)
+        if self.topdesk_person_card_id is not None:
+            assign_user(self.topdesk_person_card_id, self.asset_id)
 
     @staticmethod
     def compute_topdesk_asset_name(os: str, device_id: str) -> str:
