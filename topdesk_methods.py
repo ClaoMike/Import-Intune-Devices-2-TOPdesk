@@ -1,5 +1,6 @@
 import requests
 from env_variables import *
+from TOPdeskAsset import TOPdeskAsset
 
 def fetch_all_assets(template_id, page_size=1000):
     all_assets = []
@@ -36,7 +37,8 @@ def fetch_all_assets(template_id, page_size=1000):
             raise Exception(f"Error {response.status_code}: {response.text}")
 
         data = response.json()
-        assets = data.get("dataSet")
+        assets_as_json = data.get("dataSet")
+        assets = [TOPdeskAsset(asset) for asset in assets_as_json]
         all_assets.extend(assets)
         print(f"[{template_id}] Fetched {len(assets)} assets (total so far: {len(all_assets)})")
 

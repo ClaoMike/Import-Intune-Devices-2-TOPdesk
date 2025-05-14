@@ -1,7 +1,8 @@
 from typing import Optional
 
-class Device:
+class TOPdeskAsset:
     def __init__(self, data: dict):
+        self.id: Optional[str] = data.get("unid")
         self.name: Optional[str] = data.get("name")
         self.intune_id: Optional[str] = data.get("intune-id")
         self.azure_ad_registered: Optional[bool] = data.get("azure-ad-registered")
@@ -24,3 +25,7 @@ class Device:
         self.compliance_status: Optional[str] = data.get("compliance-status")
         self.ownership: Optional[str] = data.get("ownership")
         self.user_id: Optional[str] = data.get("user-id")
+
+    def toString(self):
+        return f"{self.id}, {self.name}, {self.intune_id}, {self.azure_ad_registered}, {self.azure_id}, {self.serial_number}, {self.name_1}, {self.manufacturer_1}, {self.model_1}, {self.operating_system}, {self.os_version}, {self.enrollment_date}, {self.last_check_in}, {self.management_certificate_expiration_date}, {self.is_managed}, {self.imei}, {self.encrypted}, {self.subscriber_carrier}, {self.total_storage}, {self.storage}, {self.compliance_status}, {self.ownership}, {self.user_id}"
+
