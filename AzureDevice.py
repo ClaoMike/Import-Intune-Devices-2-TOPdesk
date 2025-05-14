@@ -64,7 +64,7 @@ class AzureDevice(Device):
             new_data["user-id"] = self.user_id
 
         if self.registration_date_time != asset.enrollment_date:
-            new_data["enrollment-date"] = self.registration_date_time
+            new_data["enrollment-date"] = self.registration_date_time.strftime("%Y-%m-%dT%H:%M:%S.000Z") if self.registration_date_time else None
 
         if self.display_name != asset.name_1:
             new_data["name-1"] = self.display_name
@@ -73,7 +73,7 @@ class AzureDevice(Device):
             new_data["ismanaged"] = self.is_managed
 
         if self.approximate_last_sign_in != asset.last_check_in:
-            new_data["last-check-in"] = self.approximate_last_sign_in
+            new_data["last-check-in"] = self.approximate_last_sign_in.strftime("%Y-%m-%dT%H:%M:%S.000Z") if self.approximate_last_sign_in else None
 
         if self.manufacturer != asset.manufacturer_1:
             new_data["manufacturer-1"] = self.manufacturer

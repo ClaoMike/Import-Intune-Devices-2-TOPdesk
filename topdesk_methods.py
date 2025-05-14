@@ -103,8 +103,7 @@ def filter_assets_and_devices(devices, assets):
         must_update_user, new_data = device.compare_to_asset(asset)
 
         if must_update_user == True or new_data is not None:
-            assets_to_be_updated[key] = (must_update_user, new_data)
-
+            assets_to_be_updated[asset.id] = (must_update_user, new_data) # NEEDS THE TOPDESK ASSET ID, NOT ITS NAME
 
     print(f"Assets to be updated: {len(assets_to_be_updated)}")
 
@@ -114,8 +113,24 @@ def update_assets(assets):
     for asset_id, (must_update_user, new_data) in assets.items():
         print(f"{asset_id} → {must_update_user} → {new_data}")
 
-# def compare(device, asset):
+        if new_data is not None:
+            update_asset(asset_id, new_data)
 
+def update_asset(asset_id, new_data):
+    response = requests.post(
+        url=f"https://dlfseeds.topdesk.net/tas/api/assetmgmt/assets/{asset_id}",
+        auth=(topdesk_username, topdesk_password),
+        headers={
+            'Content-Type': 'application/json'
+        },
+        json=new_data
+    )
+
+    if 200 <= response.status_code < 300:
+        return
+    else:
+        error_message = f"Error {response.status_code}: {response.text}"
+        raise ValueError(error_message)
 
 # def search_for_topdesk_asset_by_asset_name(asset_name):
 #     response = requests.get(
@@ -184,22 +199,6 @@ def update_assets(assets):
 #
 #     if 200 <= response.status_code < 300:
 #         print("Successfully deleted the assignment link!")
-#     else:
-#         error_message = f"Error {response.status_code}: {response.text}"
-#         raise ValueError(error_message)
-#
-# def update_asset_data(asset_id, data):
-#     response = requests.post(
-#         url=f"https://dlfseeds.topdesk.net/tas/api/assetmgmt/assets/{asset_id}",
-#         auth=(topdesk_username, topdesk_password),
-#         headers={
-#             'Content-Type': 'application/json'
-#         },
-#         json=data
-#     )
-#
-#     if 200 <= response.status_code < 300:
-#         print(f"Successfully updated the asset with ID:{asset_id}")
 #     else:
 #         error_message = f"Error {response.status_code}: {response.text}"
 #         raise ValueError(error_message)

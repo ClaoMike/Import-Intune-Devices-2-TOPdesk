@@ -96,7 +96,7 @@ class IntuneDevice(Device):
             new_data["compliance-status"] = self.compliance_state
 
         if self.enrolled_date_time != asset.enrollment_date:
-            new_data["enrollment-date"] = self.enrolled_date_time
+            new_data["enrollment-date"] = self.enrolled_date_time.strftime("%Y-%m-%dT%H:%M:%S.000Z") if self.enrolled_date_time else None
 
         if self.free_storage_space_in_bytes != asset.storage:
             new_data["storage"] = self.free_storage_space_in_bytes
@@ -116,13 +116,13 @@ class IntuneDevice(Device):
             print(f"{self.is_supervised} != {asset.is_managed}")
 
         if self.last_sync_date_time != asset.last_check_in:
-            new_data["last-check-in"] = self.last_sync_date_time
+            new_data["last-check-in"] = self.last_sync_date_time.strftime("%Y-%m-%dT%H:%M:%S.000Z") if self.last_sync_date_time else None
 
         if self.managed_device_owner_type != asset.ownership:
             new_data["ownership"] = self.managed_device_owner_type
 
         if self.management_certificate_expiration_date != asset.management_certificate_expiration_date:
-            new_data["management-certificate-expiration-date"] = self.management_certificate_expiration_date
+            new_data["management-certificate-expiration-date"] = self.management_certificate_expiration_date.strftime("%Y-%m-%dT%H:%M:%S.000Z") if self.management_certificate_expiration_date else None
 
         if self.manufacturer != asset.manufacturer_1:
             new_data["manufacturer-1"] = self.manufacturer
