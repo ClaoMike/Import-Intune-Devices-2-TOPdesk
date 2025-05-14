@@ -2,7 +2,7 @@ import requests
 import json
 from microsoft_methods import *
 from topdesk_methods import *
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 def fetch_devices_and_assets_in_parallel():
     all_assets = []
@@ -46,14 +46,16 @@ def fetch_devices_and_assets_in_parallel():
 
 def update_TOPdesk(devices_to_create_list, assets_to_delete_list, assets_to_be_updated):
     with ThreadPoolExecutor(max_workers=3) as executor:
-        futures = [
-            executor.submit(create_assets, devices_to_create_list),
-            executor.submit(delete_assets, assets_to_delete_list),
-            executor.submit(update_assets, assets_to_be_updated)
-        ]
+        future_to_label = {
+            executor.submit(create_assets, devices_to_create_list): "Create",
+            executor.submit(delete_assets, assets_to_delete_list): "Delete",
+            executor.submit(update_assets, assets_to_be_updated): "Update"
+        }
 
-        for future in futures:
+        for future in as_completed(future_to_label):
+            label = future_to_label[future]
             try:
-                future.result()  # This will raise any exceptions if they occurred
+                future.result()
+                print(f"[✓] {label} task completed.")
             except Exception as e:
-                print(f"Error during task: {e}")
+                print(f"[✗] {label} task failed: {e}")
