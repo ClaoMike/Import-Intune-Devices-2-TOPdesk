@@ -116,6 +116,15 @@ def update_assets(assets):
         if new_data is not None:
             update_asset(asset_id, new_data)
 
+        # by this point, the asset has its user id update, see above
+        if must_update_user == True:
+            # unlink current person card
+            link = get_asset_assignment_link(asset_id)
+            remove_asset_assignment_person(asset_id, link)
+
+            # link new user
+
+
 def update_asset(asset_id, new_data):
     response = requests.post(
         url=f"https://dlfseeds.topdesk.net/tas/api/assetmgmt/assets/{asset_id}",
@@ -132,73 +141,35 @@ def update_asset(asset_id, new_data):
         error_message = f"Error {response.status_code}: {response.text}"
         raise ValueError(error_message)
 
-# def search_for_topdesk_asset_by_asset_name(asset_name):
-#     response = requests.get(
-#         url=f"https://dlfseeds.topdesk.net/tas/api/assetmgmt/assets?nameFragment={asset_name}",
-#         auth=(topdesk_username, topdesk_password),
-#         headers={
-#             'Content-Type': 'application/json'
-#         }
-#     )
-#
-#     if 200 <= response.status_code < 300:
-#         data_set = response.json().get('dataSet')
-#         if len(data_set) == 0:
-#             return None
-#         else:
-#             return data_set[0].get('id')
-#     else:
-#         error_message = f"Error {response.status_code}: {response.text}"
-#         raise ValueError(error_message)
-#
-#
-# def get_asset_data(asset_id):
-#     response = requests.get(
-#         url=f"https://dlfseeds.topdesk.net/tas/api/assetmgmt/assets/{asset_id}",
-#         auth=(topdesk_username, topdesk_password),
-#         headers={
-#             'Content-Type': 'application/json'
-#         },
-#     )
-#
-#     if 200 <= response.status_code < 300:
-#         data = response.json().get('data')
-#         # print(f"Successfully retrieve the asset's data: {data}")
-#
-#         return data
-#     else:
-#         error_message = f"Error {response.status_code}: {response.text}"
-#         raise ValueError(error_message)
-#
-# def get_asset_assignment_link(asset_id):
-#     response = requests.get(
-#         url=f"https://dlfseeds.topdesk.net/tas/api/assetmgmt/assets/{asset_id}/assignments",
-#         auth=(topdesk_username, topdesk_password),
-#         headers={
-#             'Content-Type': 'application/json'
-#         },
-#     )
-#
-#     if 200 <= response.status_code < 300:
-#         try:
-#             return response.json().get('persons')[0].get('linkId')
-#         except:
-#             return None
-#     else:
-#         error_message = f"Error {response.status_code}: {response.text}"
-#         raise ValueError(error_message)
-#
-# def remove_asset_assignment_person(asset_id, link_id):
-#     response = requests.delete(
-#         url=f"https://dlfseeds.topdesk.net/tas/api/assetmgmt/assets/{asset_id}/assignments/{link_id}",
-#         auth=(topdesk_username, topdesk_password),
-#         headers={
-#             'Content-Type': 'application/json'
-#         },
-#     )
-#
-#     if 200 <= response.status_code < 300:
-#         print("Successfully deleted the assignment link!")
-#     else:
-#         error_message = f"Error {response.status_code}: {response.text}"
-#         raise ValueError(error_message)
+def get_asset_assignment_link(asset_id):
+    response = requests.get(
+        url=f"https://dlfseeds.topdesk.net/tas/api/assetmgmt/assets/{asset_id}/assignments",
+        auth=(topdesk_username, topdesk_password),
+        headers={
+            'Content-Type': 'application/json'
+        },
+    )
+
+    if 200 <= response.status_code < 300:
+        try:
+            return response.json().get('persons')[0].get('linkId')
+        except:
+            return None
+    else:
+        error_message = f"Error {response.status_code}: {response.text}"
+        raise ValueError(error_message)
+
+def remove_asset_assignment_person(asset_id, link_id):
+    response = requests.delete(
+        url=f"https://dlfseeds.topdesk.net/tas/api/assetmgmt/assets/{asset_id}/assignments/{link_id}",
+        auth=(topdesk_username, topdesk_password),
+        headers={
+            'Content-Type': 'application/json'
+        },
+    )
+
+    if 200 <= response.status_code < 300:
+        print("Successfully deleted the assignment link!")
+    else:
+        error_message = f"Error {response.status_code}: {response.text}"
+        raise ValueError(error_message)
