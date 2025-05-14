@@ -41,10 +41,11 @@ class Device:
             raise ValueError(error_message)
 
     def assign_user(self):
-        self.topdesk_person_card_id = get_topdesk_user_id_by_mainframe(self.user_id)
+        if self.user_id is not None and self.user_id != "":
+            self.topdesk_person_card_id = get_topdesk_user_id_by_mainframe(self.user_id)
 
-        if self.topdesk_person_card_id is not None:
-            assign_user(self.topdesk_person_card_id, self.asset_id)
+            if self.topdesk_person_card_id is not None:
+                assign_user(self.topdesk_person_card_id, self.asset_id)
 
     @staticmethod
     def compute_topdesk_asset_name(os: str, device_id: str) -> str:
