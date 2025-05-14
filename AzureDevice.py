@@ -1,8 +1,10 @@
 from typing import Optional, List, Dict
-import microsoft_methods
+from Device import Device
 
-class AzureDevice:
+class AzureDevice(Device):
     def __init__(self, data: dict):
+        super().__init__()
+
         # extract relevant data
         self.device_id: Optional[str] = data.get("deviceId")  # part of the TOPdesk ID
 
@@ -20,5 +22,3 @@ class AzureDevice:
         self.registration_date_time: Optional[str] = data.get("registrationDateTime")
 
         # self.user_id: Optional[str] = microsoft_methods.get_user_id_of_azure_device(entra_id)
-
-# deviceId,approximateLastSignInDateTime,complianceExpirationDateTime,displayName,isCompliant,isManaged,manufacturer,model,operatingSystem,operatingSystemVersion,registrationDateTime

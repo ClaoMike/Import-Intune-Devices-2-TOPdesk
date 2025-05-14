@@ -1,7 +1,10 @@
 from typing import Optional, List
+from Device import Device
 
-class IntuneDevice:
+class IntuneDevice(Device):
     def __init__(self, data: dict):
+        super().__init__()
+
         # extract relevant data
         self.azure_ad_device_id: Optional[str] = data.get("azureADDeviceId")  # this will be part of the TOPdesk ID
 
@@ -25,4 +28,4 @@ class IntuneDevice:
         self.free_storage_space_in_bytes: Optional[int] = data.get("freeStorageSpaceInBytes")
         self.management_certificate_expiration_date: Optional[str] = data.get("managementCertificateExpirationDate")
 
-        self.user_id: Optional[str] = data.get("userId")
+        self.user_id = data.get("userId")
