@@ -1,4 +1,5 @@
 from typing import Optional
+from datetime import datetime
 
 class TOPdeskAsset:
     def __init__(self, data: dict):
@@ -13,9 +14,9 @@ class TOPdeskAsset:
         self.model_1: Optional[str] = data.get("model-1")
         self.operating_system: Optional[str] = data.get("operating-system")
         self.os_version: Optional[str] = data.get("os-version")
-        self.enrollment_date: Optional[str] = data.get("enrollment-date")
-        self.last_check_in: Optional[str] = data.get("last-check-in")
-        self.management_certificate_expiration_date: Optional[str] = data.get("management-certificate-expiration-date")
+        self.enrollment_date: Optional[datetime] = datetime.strptime(data.get("enrollment-date"), "%Y-%m-%dT%H:%M:%S.%f")
+        self.last_check_in: Optional[datetime] = datetime.strptime(data.get("last-check-in"), "%Y-%m-%dT%H:%M:%S.%f")
+        self.management_certificate_expiration_date: Optional[datetime] = datetime.strptime(data.get("management-certificate-expiration-date"), "%Y-%m-%dT%H:%M:%S.%f")
         self.is_managed: Optional[bool] = data.get("ismanaged")
         self.imei: Optional[str] = data.get("imei")
         self.encrypted: Optional[bool] = data.get("encrypted")

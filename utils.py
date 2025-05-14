@@ -36,7 +36,6 @@ def fetch_devices_and_assets_in_parallel():
     # Transforming the assets into dictionary as well
     all_assets_as_dict = {}
     for asset in all_assets:
-        print(asset.toString())
         if asset.name:
             all_assets_as_dict[asset.name] = asset
 
