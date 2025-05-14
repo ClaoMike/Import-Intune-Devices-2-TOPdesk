@@ -78,6 +78,30 @@ def delete_assets(assets):
             error_message = f"Error {response.status_code}: {response.text}"
             raise ValueError(error_message)
 
+def filter_assets_and_devices(devices, assets):
+    device_keys = set(devices.keys())
+    asset_keys = set(assets.keys())
+
+    # assets that need to be created
+    devices_to_create = device_keys - asset_keys
+    devices_to_create_list = [devices[key] for key in devices_to_create]
+
+    # assets that must be deleted
+    assets_to_delete = asset_keys - device_keys
+    assets_to_delete_list = [assets[key] for key in assets_to_delete]
+
+    matching_keys = device_keys & asset_keys
+
+    print(f"Assets to be created: {len(devices_to_create_list)}")
+    print(f"Assets to be deleted: {len(assets_to_delete_list)}")
+    print(f"Assets to be compared: {len(matching_keys)}")
+    print(f"Assets to be updated: {len(matching_keys)}")
+
+    return devices_to_create_list, assets_to_delete_list
+
+def update_assets(assets):
+    pass
+
 # def search_for_topdesk_asset_by_asset_name(asset_name):
 #     response = requests.get(
 #         url=f"https://dlfseeds.topdesk.net/tas/api/assetmgmt/assets?nameFragment={asset_name}",
