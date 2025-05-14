@@ -123,7 +123,7 @@ def update_assets(assets):
             remove_asset_assignment_person(asset_id, link)
 
             # link new user
-
+            topdesk_person_card_id = get_topdesk_user_id_by_mainframe(new_data.get("user-id"))
 
 def update_asset(asset_id, new_data):
     response = requests.post(
@@ -170,6 +170,28 @@ def remove_asset_assignment_person(asset_id, link_id):
 
     if 200 <= response.status_code < 300:
         print("Successfully deleted the assignment link!")
+    else:
+        error_message = f"Error {response.status_code}: {response.text}"
+        raise ValueError(error_message)
+
+def get_topdesk_user_id_by_mainframe(user_id):
+    response = requests.get(
+        url=f"https://dlfseeds.topdesk.net/tas/api/persons?query=mainframeLoginName=={user_id}",
+        auth=(topdesk_username, topdesk_password),
+        headers={
+            'Content-Type': 'application/json'
+        }
+    )
+
+    if 200 <= response.status_code < 300:
+        if response.text != '':
+            if len(response.json()) == 0:
+                return None
+            person_card = response.json()[0]
+            if person_card.get('status') != 'personArchived':
+                return person_card.get('id')
+            else:
+                return None
     else:
         error_message = f"Error {response.status_code}: {response.text}"
         raise ValueError(error_message)

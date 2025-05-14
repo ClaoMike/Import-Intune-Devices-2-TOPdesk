@@ -3,6 +3,7 @@ from enum import Enum
 from operating_systems import *
 from env_variables import *
 import requests
+from topdesk_methods import *
 
 class Device:
     class Type(Enum):
@@ -40,7 +41,7 @@ class Device:
             raise ValueError(error_message)
 
     def assign_user(self):
-        self.get_topdesk_user_id_by_mainframe()
+        self.topdesk_person_card_id = get_topdesk_user_id_by_mainframe(self.user_id)
 
         if self.topdesk_person_card_id is None:
             return
@@ -59,29 +60,6 @@ class Device:
 
         if 200 <= response.status_code < 300:
             return
-        else:
-            error_message = f"Error {response.status_code}: {response.text}"
-            raise ValueError(error_message)
-
-    def get_topdesk_user_id_by_mainframe(self):
-        response = requests.get(
-            url=f"https://dlfseeds.topdesk.net/tas/api/persons?query=mainframeLoginName=={self.user_id}",
-            auth=(topdesk_username, topdesk_password),
-            headers={
-                'Content-Type': 'application/json'
-            }
-        )
-
-        if 200 <= response.status_code < 300:
-            if response.text != '':
-                if len(response.json()) == 0:
-                    self.topdesk_person_card_id = None
-
-                person_card = response.json()[0]
-                if person_card.get('status') != 'personArchived':
-                    self.topdesk_person_card_id = person_card.get('id')
-                else:
-                    self.topdesk_person_card_id = None
         else:
             error_message = f"Error {response.status_code}: {response.text}"
             raise ValueError(error_message)
