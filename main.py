@@ -9,12 +9,11 @@ asset_keys = set(all_assets.keys())
 # assets that need to be created
 devices_to_create = device_keys - asset_keys
 devices_to_create_list = [devices[key] for key in devices_to_create]
-create_assets(devices_to_create_list)
 
 # assets that must be deleted
-# assets_to_delete = asset_keys - device_keys
-# assets_to_delete_list = [devices[key] for key in assets_to_delete]
-#
+assets_to_delete = asset_keys - device_keys
+assets_to_delete_list = [all_assets[key] for key in assets_to_delete]
+
 # devices and assets that must be checked for comparison
 # matching_keys = device_keys & asset_keys
 
@@ -22,3 +21,6 @@ print(f"Assets to be created: {len(devices_to_create_list)}")
 # print(f"Assets to be deleted: {len(assets_to_delete)}")
 # print(f"Assets to be matched: {len(matching_keys)}")
 # print(f"Total: {len(assets_to_delete) + len(devices_to_create) + len(matching_keys)}")
+
+# create_assets(devices_to_create_list)
+delete_assets(assets_to_delete_list)

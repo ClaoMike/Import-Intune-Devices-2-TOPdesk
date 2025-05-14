@@ -68,4 +68,3 @@ class IntuneDevice(Device):
             "total-storage": self.total_storage_space_in_bytes,
             "user-id": self.user_id,
         }
-

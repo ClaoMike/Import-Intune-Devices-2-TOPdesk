@@ -48,53 +48,36 @@ def fetch_all_assets(template_id, page_size=1000):
     return all_assets
 
 def create_assets(devices):
-    for device in devices:
-        device.create_in_TOPdesk()
+    if len(devices) != 0:
+        print(f"Creating assets for {len(devices)} devices")
 
-# def assign_user_to_asset(person_card_id, asset_id):
-#     response = requests.put(
-#         url=f"https://dlfseeds.topdesk.net/tas/api/assetmgmt/assets/{asset_id}/assignments",
-#         auth=(topdesk_username, topdesk_password),
-#         headers={
-#             'Content-Type': 'application/json'
-#         },
-#         json={
-#             "linkToId": person_card_id,
-#             "linkType": "person"
-#         }
-#     )
-#
-#     if 200 <= response.status_code < 300:
-#         print("Successfully assigned user to asset")
-#     else:
-#         error_message = f"Error {response.status_code}: {response.text}"
-#         raise ValueError(error_message)
-#
-# def get_topdesk_user_id_by_mainframe(user_id):
-#     response = requests.get(
-#         url=f"https://dlfseeds.topdesk.net/tas/api/persons?query=mainframeLoginName=={user_id}",
-#         auth=(topdesk_username, topdesk_password),
-#         headers={
-#             'Content-Type': 'application/json'
-#         }
-#     )
-#
-#     if 200 <= response.status_code < 300:
-#         if response.text != '':
-#             # print(response.json())
-#
-#             if len(response.json()) == 0:
-#                 return None
-#
-#             person_card = response.json()[0]
-#             if person_card.get('status') != 'personArchived':
-#                 return person_card.get('id')
-#             else:
-#                 return None
-#     else:
-#         error_message = f"Error {response.status_code}: {response.text}"
-#         raise ValueError(error_message)
-#
+        for device in devices:
+            device.create_in_TOPdesk()
+            device.assign_user()
+
+def delete_assets(assets):
+    if len(assets) != 0:
+        print(f"Deleting {len(assets)} assets")
+
+        asset_ids_to_delete = [asset.id for asset in assets if asset.id is not None]
+
+        response = requests.post(
+            url=f"https://dlfseeds.topdesk.net/tas/api/assetmgmt/assets/delete",
+            auth=(topdesk_username, topdesk_password),
+            headers={
+                'Content-Type': 'application/json'
+            },
+            json={
+                'unids': asset_ids_to_delete
+            }
+        )
+
+        if 200 <= response.status_code < 300:
+            return
+        else:
+            error_message = f"Error {response.status_code}: {response.text}"
+            raise ValueError(error_message)
+
 # def search_for_topdesk_asset_by_asset_name(asset_name):
 #     response = requests.get(
 #         url=f"https://dlfseeds.topdesk.net/tas/api/assetmgmt/assets?nameFragment={asset_name}",
