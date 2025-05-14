@@ -1,4 +1,6 @@
 from Device import *
+from datetime import datetime
+from typing import Optional
 
 class IntuneDevice(Device):
     def __init__(self, data: dict):
@@ -9,16 +11,28 @@ class IntuneDevice(Device):
 
         self.azure_ad_registered: Optional[bool] = data.get("azureADRegistered")
         self.compliance_state: Optional[str] = data.get("complianceState")
-        self.enrolled_date_time: Optional[str] = data.get("enrolledDateTime")
+        self.enrolled_date_time: Optional[datetime] = (
+            datetime.strptime(
+                data.get("enrolledDateTime"),
+                "%Y-%m-%dT%H:%M:%SZ") if data.get("enrolledDateTime") else None
+        )
         self.free_storage_space_in_bytes: Optional[int] = data.get("freeStorageSpaceInBytes")
         self.device_name: Optional[str] = data.get("deviceName")
         self.id: Optional[str] = data.get("id")
         self.imei: Optional[str] = data.get("imei")
         self.is_encrypted: Optional[bool] = data.get("isEncrypted")
         self.is_supervised: Optional[bool] = data.get("isSupervised")
-        self.last_sync_date_time: Optional[str] = data.get("lastSyncDateTime")
+        self.last_sync_date_time: Optional[datetime] = (
+            datetime.strptime(
+                data.get("lastSyncDateTime"),
+                "%Y-%m-%dT%H:%M:%SZ") if data.get("lastSyncDateTime") else None
+        )
         self.managed_device_owner_type: Optional[str] = data.get("managedDeviceOwnerType")
-        self.management_certificate_expiration_date: Optional[str] = data.get("managementCertificateExpirationDate")
+        self.management_certificate_expiration_date: Optional[datetime] = (
+            datetime.strptime(
+                data.get("managementCertificateExpirationDate"),
+                "%Y-%m-%dT%H:%M:%SZ") if data.get("managementCertificateExpirationDate") else None
+        )
         self.manufacturer: Optional[str] = data.get("manufacturer")
         self.model: Optional[str] = data.get("model")
         self.operating_system: Optional[str] = data.get("operatingSystem")
@@ -49,16 +63,16 @@ class IntuneDevice(Device):
             "azure-ad-registered": self.azure_ad_registered,
             "azure-id": self.azure_ad_device_id,
             "compliance-status": self.compliance_state,
-            "enrollment-date": self.enrolled_date_time,
+            "enrollment-date": self.enrolled_date_time.strftime("%Y-%m-%dT%H:%M:%S.000Z") if self.enrolled_date_time else None,
             "storage": self.free_storage_space_in_bytes,
             "name-1": self.device_name,
             "intune-id": self.id,
             "imei": self.imei,
             "encrypted": self.is_encrypted,
             "ismanaged": self.is_supervised,
-            "last-check-in": self.last_sync_date_time,
+            "last-check-in": self.last_sync_date_time.strftime("%Y-%m-%dT%H:%M:%S.000Z") if self.last_sync_date_time else None,
             "ownership": self.managed_device_owner_type,
-            "management-certificate-expiration-date": self.management_certificate_expiration_date,
+            "management-certificate-expiration-date": self.management_certificate_expiration_date.strftime("%Y-%m-%dT%H:%M:%S.000Z") if self.management_certificate_expiration_date else None,
             "manufacturer-1": self.manufacturer,
             "model-1": self.model,
             "operating-system": self.operating_system,

@@ -8,5 +8,5 @@ devices_to_create_list, assets_to_delete_list = filter_assets_and_devices(
     all_assets
 )
 
-# create_assets(devices_to_create_list)
+create_assets(devices_to_create_list)
 # delete_assets(assets_to_delete_list)
