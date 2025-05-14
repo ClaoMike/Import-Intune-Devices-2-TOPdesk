@@ -95,12 +95,24 @@ def filter_assets_and_devices(devices, assets):
     print(f"Assets to be created: {len(devices_to_create_list)}")
     print(f"Assets to be deleted: {len(assets_to_delete_list)}")
     print(f"Assets to be compared: {len(matching_keys)}")
-    print(f"Assets to be updated: {len(matching_keys)}")
 
-    return devices_to_create_list, assets_to_delete_list
+    assets_to_be_updated = {}
+    for key in matching_keys:
+        device = devices[key]
+        asset = assets[key]
+        must_update_user, new_data = device.compare_to_asset(asset)
+
+        if must_update_user == True or new_data is not None:
+            assets_to_be_updated[key] = (must_update_user, new_data)
+
+
+    print(f"Assets to be updated: {len(assets_to_be_updated)}")
+
+    return devices_to_create_list, assets_to_delete_list, assets_to_be_updated
 
 def update_assets(assets):
-    pass
+    for asset_id, (must_update_user, new_data) in assets.items():
+        print(f"{asset_id} → {must_update_user} → {new_data}")
 
 # def compare(device, asset):
 

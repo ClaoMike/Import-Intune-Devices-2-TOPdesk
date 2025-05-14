@@ -17,8 +17,7 @@ class AzureDevice(Device):
                 "%Y-%m-%dT%H:%M:%SZ") if data.get("approximateLastSignInDateTime") else None
         )
         self.display_name: Optional[str] = data.get("displayName")
-        self.is_compliant: Optional[bool] = data.get("isCompliant")
-        self.is_managed: Optional[bool] = data.get("isManaged")
+        self.is_managed: Optional[bool] = bool(data.get("isManaged"))
         self.manufacturer: Optional[str] = data.get("manufacturer")
         self.model: Optional[str] = data.get("model")
         self.operating_system: Optional[str] = data.get("operatingSystem")
@@ -47,7 +46,6 @@ class AzureDevice(Device):
             "azure-id": self.device_id,
             "last-check-in": self.approximate_last_sign_in.strftime("%Y-%m-%dT%H:%M:%S.000Z") if self.approximate_last_sign_in else None,
             "name-1": self.display_name,
-            "compliance-status": self.is_compliant,
             "ismanaged": self.is_managed,
             "manufacturer-1": self.manufacturer,
             "model-1": self.model,
@@ -64,9 +62,6 @@ class AzureDevice(Device):
         if self.user_id != asset.user_id:
             must_update_user = True
             new_data["user-id"] = self.user_id
-
-        if self.is_compliant != asset.compliance_status:
-            new_data["compliance-status"] = self.is_compliant
 
         if self.registration_date_time != asset.enrollment_date:
             new_data["enrollment-date"] = self.registration_date_time
