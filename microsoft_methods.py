@@ -61,3 +61,44 @@ def get_user_id_of_azure_device(device_id):
     else:
         error_message = f"Error {response.status_code}: {response.text}"
         raise ValueError(error_message)
+
+def batch_get_registered_users(device_ids):
+    url = "https://graph.microsoft.com/v1.0/$batch"
+    headers = {
+        "Authorization": f"Bearer {auth_state.access_token}",
+        "Content-Type": "application/json"
+    }
+
+    requests_payload = [
+        {
+            "id": device_id,
+            "method": "GET",
+            "url": f"/devices/{device_id}/registeredUsers"
+        }
+        for i, device_id in enumerate(device_ids)
+    ]
+
+    # Split into chunks of 20
+    all_results = {}
+    for i in range(0, len(requests_payload), 20):
+        chunk = requests_payload[i:i+20]
+        _json = {"requests": chunk}
+
+        # print(_json)
+        response = requests.post(url, headers=headers, json=_json)
+        data = response.json()
+
+        # print(data)
+
+        for item in data.get("responses", []):
+            dev_id = item.get("id")
+            if item["status"] == 200:
+                users = item["body"].get("value", [])
+                if len(users) == 0:
+                    user_id = None
+                else:
+                    user_id = users[0].get("id")
+                all_results[dev_id] = user_id
+            else:
+                all_results[dev_id] = None  # or log error
+    return all_results

@@ -38,9 +38,17 @@ with ThreadPoolExecutor(max_workers=2) as executor:
         except Exception as e:
             print(f"Error while loading {platform} devices: {e}")
 
+azure_device_ids = [device.id for device in azure_devices if device.id is not None]
+print("Users:")
+users = batch_get_registered_users(azure_device_ids)
+
+print(len(users))
+print(users)
+print(intune_devices)
+
 # Combine all devices if needed
-devices = azure_devices + intune_devices
-print(len(devices))
+# devices = azure_devices + intune_devices
+# print(len(devices))
 # count = 0
 # for device in devices:
 #     print(f"{count}. {device.user_id}")
