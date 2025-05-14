@@ -1,6 +1,7 @@
 from Device import *
 from datetime import datetime
 from typing import Optional
+from TOPdeskAsset import *
 
 class AzureDevice(Device):
     def __init__(self, data: dict):
@@ -55,3 +56,40 @@ class AzureDevice(Device):
             "enrollment-date": self.registration_date_time.strftime("%Y-%m-%dT%H:%M:%S.000Z") if self.registration_date_time else None,
             "user-id": self.user_id,
         }
+
+    def compare_to_asset(self, asset: TOPdeskAsset):
+        must_update_user = False
+        new_data = {}
+
+        if self.user_id != asset.user_id:
+            must_update_user = True
+            new_data["user-id"] = self.user_id
+
+        if self.is_compliant != asset.compliance_status:
+            new_data["compliance-status"] = self.is_compliant
+
+        if self.registration_date_time != asset.enrollment_date:
+            new_data["enrollment-date"] = self.registration_date_time
+
+        if self.display_name != asset.name_1:
+            new_data["name-1"] = self.display_name
+
+        if self.is_managed != asset.is_managed:
+            new_data["ismanaged"] = self.is_managed
+
+        if self.approximate_last_sign_in != asset.last_check_in:
+            new_data["last-check-in"] = self.approximate_last_sign_in
+
+        if self.manufacturer != asset.manufacturer_1:
+            new_data["manufacturer-1"] = self.manufacturer
+
+        if self.model != asset.model_1:
+            new_data["model-1"] = self.model
+
+        if self.operating_system != asset.operating_system:
+            new_data["operating-system"] = self.operating_system
+
+        if self.operating_system_version != asset.os_version:
+            new_data["os-version"] = self.operating_system_version
+
+        return must_update_user, new_data if new_data else None

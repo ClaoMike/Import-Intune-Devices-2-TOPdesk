@@ -102,6 +102,9 @@ def filter_assets_and_devices(devices, assets):
 def update_assets(assets):
     pass
 
+# def compare(device, asset):
+
+
 # def search_for_topdesk_asset_by_asset_name(asset_name):
 #     response = requests.get(
 #         url=f"https://dlfseeds.topdesk.net/tas/api/assetmgmt/assets?nameFragment={asset_name}",

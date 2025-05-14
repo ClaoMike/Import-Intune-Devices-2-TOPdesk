@@ -1,6 +1,7 @@
 from Device import *
 from datetime import datetime
 from typing import Optional
+from TOPdeskAsset import *
 
 class IntuneDevice(Device):
     def __init__(self, data: dict):
@@ -82,3 +83,64 @@ class IntuneDevice(Device):
             "total-storage": self.total_storage_space_in_bytes,
             "user-id": self.user_id,
         }
+
+    def compare_to_asset(self, asset: TOPdeskAsset):
+        must_update_user = False
+        new_data = {}
+
+        if self.user_id != asset.user_id:
+            must_update_user = True
+            new_data["user-id"] = self.user_id
+
+        if self.compliance_state != asset.compliance_status:
+            new_data["compliance-status"] = self.compliance_state
+
+        if self.enrolled_date_time != asset.enrollment_date:
+            new_data["enrollment-date"] = self.enrolled_date_time
+
+        if self.free_storage_space_in_bytes != asset.storage:
+            new_data["storage"] = self.free_storage_space_in_bytes
+
+        if self.device_name != asset.name_1:
+            new_data["name-1"] = self.device_name
+
+        if self.imei != asset.imei:
+            new_data["imei"] = self.imei
+
+        if self.is_encrypted != asset.encrypted:
+            new_data["encrypted"] = self.is_encrypted
+
+        if self.is_supervised != asset.is_managed:
+            new_data["ismanaged"] = self.is_supervised
+
+        if self.last_sync_date_time != asset.last_check_in:
+            new_data["last-check-in"] = self.last_sync_date_time
+
+        if self.managed_device_owner_type != asset.ownership:
+            new_data["ownership"] = self.managed_device_owner_type
+
+        if self.management_certificate_expiration_date != asset.management_certificate_expiration_date:
+            new_data["management-certificate-expiration-date"] = self.management_certificate_expiration_date
+
+        if self.manufacturer != asset.manufacturer_1:
+            new_data["manufacturer-1"] = self.manufacturer
+
+        if self.model != asset.model_1:
+            new_data["model-1"] = self.model
+
+        if self.operating_system != asset.operating_system:
+            new_data["operating-system"] = self.operating_system
+
+        if self.os_version != asset.os_version:
+            new_data["os-version"] = self.os_version
+
+        if self.serial_number != asset.serial_number:
+            new_data["serial-number"] = self.serial_number
+
+        if self.subscriber_carrier != asset.subscriber_carrier:
+            new_data["subscriber-carrier"] = self.subscriber_carrier
+
+        if self.total_storage_space_in_bytes != asset.total_storage:
+            new_data["total-storage"] = self.total_storage_space_in_bytes
+
+        return must_update_user, new_data if new_data else None
