@@ -245,7 +245,6 @@ class IntuneDevice(Device):
 
         if self.free_storage_space_in_bytes != asset.storage:
             new_data["storage"] = self.free_storage_space_in_bytes
-            print(f"{self.free_storage_space_in_bytes} != {asset.storage}")
 
         if self.device_name != asset.name_1:
             new_data["name-1"] = self.device_name
@@ -258,7 +257,6 @@ class IntuneDevice(Device):
 
         if self.is_supervised != asset.is_managed:
             new_data["ismanaged"] = self.is_supervised
-            print(f"{self.is_supervised} != {asset.is_managed}")
 
         if self.last_sync_date_time != asset.last_check_in:
             new_data["last-check-in"] = self.last_sync_date_time.strftime("%Y-%m-%dT%H:%M:%S.000Z") if self.last_sync_date_time else None
@@ -289,7 +287,6 @@ class IntuneDevice(Device):
 
         if self.total_storage_space_in_bytes != asset.total_storage:
             new_data["total-storage"] = self.total_storage_space_in_bytes
-            print(f"{self.total_storage_space_in_bytes} != {asset.total_storage}")
 
         return must_update_user, new_data if new_data else None
 
