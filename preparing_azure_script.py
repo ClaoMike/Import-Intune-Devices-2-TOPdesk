@@ -876,6 +876,18 @@ def update_TOPdesk(to_create_list, to_delete_list, to_update_list):
 
 ########################################################################
 
+class MicrosoftDefenderDevice:
+    def __init__(self, data: dict):
+
+        # extract relevant data
+        self.id: Optional[str] = data.get("aadDeviceId") # this is the Azure ID
+
+        self.os_platform: Optional[str] = data.get("osPlatform")
+        self.version: Optional[str] = data.get("version")
+        self.last_ip_address: Optional[str] = data.get("lastIpAddress")
+        self.last_external_ip_address: Optional[str] = data.get("lastExternalIpAddress")
+        self.exposure_level: Optional[str] = data.get("exposureLevel")
+
 def get_microsoft_defender_devices():
     response = requests.get(
         url=f"https://api.security.microsoft.com/api/machines",
@@ -888,47 +900,22 @@ def get_microsoft_defender_devices():
     if 200 <= response.status_code < 300:
         microsoft_defender_devices = response.json().get('value')
         microsoft_defender_devices_with_azure_id = [device for device in microsoft_defender_devices if device.get("aadDeviceId") is not None]
+        microsoft_defender_devices_with_azure_id_as_dictionary = {}
 
-        return microsoft_defender_devices_with_azure_id
+        for data in microsoft_defender_devices_with_azure_id:
+            new_device = MicrosoftDefenderDevice(data=data)
+            if new_device.id in microsoft_defender_devices_with_azure_id_as_dictionary:
+                print(f"Duplicate device: {new_device.id}")
+            microsoft_defender_devices_with_azure_id_as_dictionary[new_device.id] = new_device
+
+        return microsoft_defender_devices_with_azure_id_as_dictionary
     else:
         error_message = f"Error {response.status_code}: {response.text}"
         raise ValueError(error_message)
 
 microsoft_defender_devices = get_microsoft_defender_devices()
-for device in microsoft_defender_devices:
-    print(device)
+for key, value in microsoft_defender_devices.items():
+    print(f"{key} = {value}")
 
 print(len(microsoft_defender_devices))
 
-# class AzureDevice:
-#     def __init__(self, data: dict):
-#
-#         # extract relevant data
-#         self.id = data.get("id") # this is the Azure ID
-#
-#         self.approximate_last_sign_in: Optional[datetime] = (
-#             datetime.strptime(
-#                 data.get("approximateLastSignInDateTime"),
-#                 "%Y-%m-%dT%H:%M:%SZ") if data.get("approximateLastSignInDateTime") else None
-#         )
-#         self.display_name: Optional[str] = data.get("displayName")
-#         self.is_managed: Optional[bool] = bool(data.get("isManaged"))
-#         self.manufacturer: Optional[str] = data.get("manufacturer")
-#         self.model: Optional[str] = data.get("model")
-#         self.operating_system: Optional[str] = data.get("operatingSystem")
-#         self.operating_system_version: Optional[str] = data.get("operatingSystemVersion")
-#         self.registration_date_time: Optional[datetime] = (
-#             datetime.strptime(
-#                 data.get("registrationDateTime"),
-#                 "%Y-%m-%dT%H:%M:%SZ") if data.get("registrationDateTime") else None
-#         )
-#
-#         self.device_type: Optional[Device.Type] = Device.get_device_type(
-#             operating_system=self.operating_system
-#         )
-#
-#         # compute the topdesk asset name
-#         self.topdesk_asset_name = Device.compute_topdesk_asset_name(
-#             os=self.operating_system,
-#             device_id=self.device_id
-#         )
