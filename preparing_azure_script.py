@@ -183,7 +183,7 @@ class IntuneDevice(Device):
         self.manufacturer: Optional[str] = data.get("manufacturer")
         self.model: Optional[str] = data.get("model")
         self.operating_system: Optional[str] = data.get("operatingSystem")
-        self.os_version: Optional[str] = data.get("osVersion")
+        self.operating_system_version: Optional[str] = data.get("osVersion")
         self.serial_number: Optional[str] = data.get("serialNumber")
         self.subscriber_carrier: Optional[str] = data.get("subscriberCarrier")
         self.total_storage_space_in_bytes: Optional[int] = int(data.get("totalStorageSpaceInBytes")) if data.get("totalStorageSpaceInBytes") else None
@@ -223,7 +223,7 @@ class IntuneDevice(Device):
             "manufacturer-1": self.manufacturer,
             "model-1": self.model,
             "operating-system": self.operating_system,
-            "os-version": self.os_version,
+            "os-version": self.operating_system_version,
             "serial-number": self.serial_number,
             "subscriber-carrier": self.subscriber_carrier,
             "total-storage": self.total_storage_space_in_bytes,
@@ -277,8 +277,8 @@ class IntuneDevice(Device):
         if self.operating_system != asset.operating_system:
             new_data["operating-system"] = self.operating_system
 
-        if self.os_version != asset.os_version:
-            new_data["os-version"] = self.os_version
+        if self.operating_system_version != asset.os_version:
+            new_data["os-version"] = self.operating_system_version
 
         if self.serial_number != asset.serial_number:
             new_data["serial-number"] = self.serial_number
@@ -376,6 +376,18 @@ class AzureDevice(Device):
             new_data["os-version"] = self.operating_system_version
 
         return must_update_user, new_data if new_data else None
+
+class MicrosoftDefenderDevice:
+    def __init__(self, data: dict):
+
+        # extract relevant data
+        self.id: Optional[str] = data.get("aadDeviceId") # this is the Azure ID
+
+        self.os_platform: Optional[str] = data.get("osPlatform")
+        self.version: Optional[str] = data.get("version")
+        self.last_ip_address: Optional[str] = data.get("lastIpAddress")
+        self.last_external_ip_address: Optional[str] = data.get("lastExternalIpAddress")
+        self.exposure_level: Optional[str] = data.get("exposureLevel")
 
 def get_access_token(scope: str):
     response = requests.post(
@@ -799,6 +811,31 @@ def fetch_devices():
 
     return devices
 
+def get_microsoft_defender_devices():
+    response = requests.get(
+        url=f"https://api.security.microsoft.com/api/machines",
+        headers={
+        'Authorization': f'Bearer {get_microsoft_defender_access_token()}',
+        'Content-Type': 'application/json'
+        },
+    )
+
+    if 200 <= response.status_code < 300:
+        microsoft_defender_devices = response.json().get('value')
+        microsoft_defender_devices_with_azure_id = [device for device in microsoft_defender_devices if device.get("aadDeviceId") is not None]
+        microsoft_defender_devices_with_azure_id_as_dictionary = {}
+
+        for data in microsoft_defender_devices_with_azure_id:
+            new_device = MicrosoftDefenderDevice(data=data)
+            if new_device.id in microsoft_defender_devices_with_azure_id_as_dictionary:
+                print(f"Duplicate device: {new_device.id}")
+            microsoft_defender_devices_with_azure_id_as_dictionary[new_device.id] = new_device
+
+        return microsoft_defender_devices_with_azure_id_as_dictionary
+    else:
+        error_message = f"Error {response.status_code}: {response.text}"
+        raise ValueError(error_message)
+
 def fetch_devices_and_assets_in_parallel():
     assets = []
     topdesk_categories = [
@@ -828,6 +865,25 @@ def fetch_devices_and_assets_in_parallel():
         # Wait for devices
         devices = device_future.result()
 
+
+    for id, device in devices.items():
+        print(id)
+
+    # sync with Microsoft Defender
+    microsoft_defender_devices = get_microsoft_defender_devices()
+    for azure_id, md in microsoft_defender_devices.items():
+        device_id = None
+
+        for prefix in ["COMPUTER", "MOBILE", "DEVICE"]:
+            try_device_id = f"{prefix}-{azure_id}"
+            if try_device_id in devices:
+                device_id = try_device_id
+                break
+
+        if device_id is not None:
+            devices[device_id].operating_system = md.os_platform
+            devices[device_id].operating_system_version = md.version
+
     # Transforming the assets into dictionary as well
     all_assets_as_dict = {}
     for asset in assets:
@@ -855,67 +911,22 @@ def update_TOPdesk(to_create_list, to_delete_list, to_update_list):
             except Exception as e:
                 print(f"[✗] {label} task failed: {e}")
 
-# start_time = time.time()
-#
-# # Fetch devices and assets
-# all_devices, all_assets = fetch_devices_and_assets_in_parallel()
-#
-# # Filter to-dos
-# devices_to_create_list, assets_to_delete_list, assets_to_be_updated = filter_assets_and_devices(
-#     all_devices,
-#     all_assets
-# )
-#
-# # Update TOPdesk
-# update_TOPdesk(devices_to_create_list, assets_to_delete_list, assets_to_be_updated)
-#
-# end_time = time.time()
-# elapsed = end_time - start_time
-#
-# print(f"\n[✓] Total time: {elapsed:.2f} seconds")
+start_time = time.time()
 
-########################################################################
+# Fetch devices and assets
+all_devices, all_assets = fetch_devices_and_assets_in_parallel()
 
-class MicrosoftDefenderDevice:
-    def __init__(self, data: dict):
+# Filter to-dos
+devices_to_create_list, assets_to_delete_list, assets_to_be_updated = filter_assets_and_devices(
+    all_devices,
+    all_assets
+)
 
-        # extract relevant data
-        self.id: Optional[str] = data.get("aadDeviceId") # this is the Azure ID
+# Update TOPdesk
+update_TOPdesk(devices_to_create_list, assets_to_delete_list, assets_to_be_updated)
 
-        self.os_platform: Optional[str] = data.get("osPlatform")
-        self.version: Optional[str] = data.get("version")
-        self.last_ip_address: Optional[str] = data.get("lastIpAddress")
-        self.last_external_ip_address: Optional[str] = data.get("lastExternalIpAddress")
-        self.exposure_level: Optional[str] = data.get("exposureLevel")
+end_time = time.time()
+elapsed = end_time - start_time
 
-def get_microsoft_defender_devices():
-    response = requests.get(
-        url=f"https://api.security.microsoft.com/api/machines",
-        headers={
-        'Authorization': f'Bearer {get_microsoft_defender_access_token()}',
-        'Content-Type': 'application/json'
-        },
-    )
-
-    if 200 <= response.status_code < 300:
-        microsoft_defender_devices = response.json().get('value')
-        microsoft_defender_devices_with_azure_id = [device for device in microsoft_defender_devices if device.get("aadDeviceId") is not None]
-        microsoft_defender_devices_with_azure_id_as_dictionary = {}
-
-        for data in microsoft_defender_devices_with_azure_id:
-            new_device = MicrosoftDefenderDevice(data=data)
-            if new_device.id in microsoft_defender_devices_with_azure_id_as_dictionary:
-                print(f"Duplicate device: {new_device.id}")
-            microsoft_defender_devices_with_azure_id_as_dictionary[new_device.id] = new_device
-
-        return microsoft_defender_devices_with_azure_id_as_dictionary
-    else:
-        error_message = f"Error {response.status_code}: {response.text}"
-        raise ValueError(error_message)
-
-microsoft_defender_devices = get_microsoft_defender_devices()
-for key, value in microsoft_defender_devices.items():
-    print(f"{key} = {value}")
-
-print(len(microsoft_defender_devices))
+print(f"\n[✓] Total time: {elapsed:.2f} seconds")
 
