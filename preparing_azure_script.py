@@ -31,6 +31,7 @@ access_token = None
 device_os = {
     'Unknown',
     'AndroidForWork',
+    'AndroidAOSP',
     '',
 }
 
@@ -133,7 +134,7 @@ class Device:
         elif operating_system in mobile_os:
             return Device.Type.MOBILE
         else:
-            print("New OS detected - please take action")
+            print(f"New OS detected: {operating_system} - please take action")
             return None
 
     @staticmethod

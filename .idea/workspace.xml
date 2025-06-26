@@ -4,14 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="8aba8601-9510-44b3-b625-41cec93fb9fc" name="Changes" comment="More threads">
-      <change afterPath="$PROJECT_DIR$/preparing_azure_script.py" afterDir="false" />
+    <list default="true" id="8aba8601-9510-44b3-b625-41cec93fb9fc" name="Changes" comment="Remove some prints">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Device.py" beforeDir="false" afterPath="$PROJECT_DIR$/Device.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/comparisons.py" beforeDir="false" afterPath="$PROJECT_DIR$/comparisons.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/json_parsing.py" beforeDir="false" afterPath="$PROJECT_DIR$/json_parsing.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/topdesk_methods.py" beforeDir="false" afterPath="$PROJECT_DIR$/topdesk_methods.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/preparing_azure_script.py" beforeDir="false" afterPath="$PROJECT_DIR$/preparing_azure_script.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -49,27 +44,28 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Python.Device.executor": "Run",
-    "Python.clear_devices_from_topdesk.executor": "Run",
-    "Python.main.executor": "Run",
-    "Python.operating_systems.executor": "Run",
-    "Python.preparing_azure_script.executor": "Run",
-    "Python.second_main.executor": "Run",
-    "Python.utils.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "develop",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Python.Device.executor&quot;: &quot;Run&quot;,
+    &quot;Python.clear_devices_from_topdesk.executor&quot;: &quot;Run&quot;,
+    &quot;Python.main.executor&quot;: &quot;Run&quot;,
+    &quot;Python.operating_systems.executor&quot;: &quot;Run&quot;,
+    &quot;Python.preparing_azure_script.executor&quot;: &quot;Run&quot;,
+    &quot;Python.second_main.executor&quot;: &quot;Run&quot;,
+    &quot;Python.utils.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;develop&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/ClaJec0/PycharmProjects/TOPdeskCsisIntegration&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Users\ClaJec0\PycharmProjects\PythonProject6" />
@@ -99,31 +95,12 @@
       <workItem from="1746599372844" duration="18101000" />
       <workItem from="1746620416876" duration="6014000" />
       <workItem from="1747030405188" duration="25115000" />
-      <workItem from="1747118928711" duration="54066000" />
-    </task>
-    <task id="LOCAL-00025" summary="Separate code into smaller bits">
-      <option name="closed" value="true" />
-      <created>1746537476259</created>
-      <option name="number" value="00025" />
-      <option name="presentableId" value="LOCAL-00025" />
-      <option name="project" value="LOCAL" />
-      <updated>1746537476259</updated>
-    </task>
-    <task id="LOCAL-00026" summary="Deleting devices as well">
-      <option name="closed" value="true" />
-      <created>1746601709146</created>
-      <option name="number" value="00026" />
-      <option name="presentableId" value="LOCAL-00026" />
-      <option name="project" value="LOCAL" />
-      <updated>1746601709146</updated>
-    </task>
-    <task id="LOCAL-00027" summary="Fetching the user ID for all Azure devices">
-      <option name="closed" value="true" />
-      <created>1746606924248</created>
-      <option name="number" value="00027" />
-      <option name="presentableId" value="LOCAL-00027" />
-      <option name="project" value="LOCAL" />
-      <updated>1746606924248</updated>
+      <workItem from="1747118928711" duration="54505000" />
+      <workItem from="1747636656803" duration="3732000" />
+      <workItem from="1747649430526" duration="8000" />
+      <workItem from="1747649539960" duration="448000" />
+      <workItem from="1748254423694" duration="27000" />
+      <workItem from="1750922696645" duration="3466000" />
     </task>
     <task id="LOCAL-00028" summary="Fetching the person card id">
       <option name="closed" value="true" />
@@ -493,16 +470,37 @@
       <option name="project" value="LOCAL" />
       <updated>1747235496224</updated>
     </task>
-    <option name="localTasksCounter" value="74" />
+    <task id="LOCAL-00074" summary="Prepared Azure script">
+      <option name="closed" value="true" />
+      <created>1747238822202</created>
+      <option name="number" value="00074" />
+      <option name="presentableId" value="LOCAL-00074" />
+      <option name="project" value="LOCAL" />
+      <updated>1747238822202</updated>
+    </task>
+    <task id="LOCAL-00075" summary="Remove old code">
+      <option name="closed" value="true" />
+      <created>1747238914678</created>
+      <option name="number" value="00075" />
+      <option name="presentableId" value="LOCAL-00075" />
+      <option name="project" value="LOCAL" />
+      <updated>1747238914678</updated>
+    </task>
+    <task id="LOCAL-00076" summary="Remove some prints">
+      <option name="closed" value="true" />
+      <created>1747637484478</created>
+      <option name="number" value="00076" />
+      <option name="presentableId" value="LOCAL-00076" />
+      <option name="project" value="LOCAL" />
+      <updated>1747637484478</updated>
+    </task>
+    <option name="localTasksCounter" value="77" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Shared access token across all modules" />
-    <MESSAGE value="Concurrently fetching Intune and Azure" />
-    <MESSAGE value="Batching the users IDs" />
     <MESSAGE value="Comments" />
     <MESSAGE value="Batching user IDs on the go" />
     <MESSAGE value="Some inheritance" />
@@ -525,11 +523,14 @@
     <MESSAGE value="Fix bug" />
     <MESSAGE value="Refactor" />
     <MESSAGE value="More threads" />
-    <option name="LAST_COMMIT_MESSAGE" value="More threads" />
+    <MESSAGE value="Prepared Azure script" />
+    <MESSAGE value="Remove old code" />
+    <MESSAGE value="Remove some prints" />
+    <option name="LAST_COMMIT_MESSAGE" value="Remove some prints" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/PythonProject6$Device.coverage" NAME="Device Coverage Results" MODIFIED="1747233139136" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/PythonProject6$preparing_azure_script.coverage" NAME="preparing_azure_script Coverage Results" MODIFIED="1747238181055" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/PythonProject6$preparing_azure_script.coverage" NAME="preparing_azure_script Coverage Results" MODIFIED="1750930100663" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/PythonProject6$main.coverage" NAME="main Coverage Results" MODIFIED="1747236739552" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/PythonProject6$utils.coverage" NAME="utils Coverage Results" MODIFIED="1746626442203" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/PythonProject6$second_main.coverage" NAME="second_main Coverage Results" MODIFIED="1747215191481" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
