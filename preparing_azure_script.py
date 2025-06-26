@@ -377,9 +377,7 @@ class AzureDevice(Device):
 
         return must_update_user, new_data if new_data else None
 
-def get_access_token():
-    global access_token
-
+def get_access_token(scope: str):
     response = requests.post(
         url=f"https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/token",
         headers={
@@ -387,7 +385,7 @@ def get_access_token():
         },
         data={
             'client_id': client_id,
-            'scope': 'https://graph.microsoft.com/.default',
+            'scope':  scope,
             'client_secret': client_secret,
             'grant_type': 'client_credentials',
         }
@@ -395,9 +393,16 @@ def get_access_token():
 
     if 200 <= response.status_code < 300:
         print("Successfully obtained access token")
-        access_token = response.json()['access_token']
+        return response.json()['access_token']
     else:
         raise ValueError(f"Error {response.status_code}: {response.text}")
+
+def get_azure_access_token():
+    global access_token
+    access_token = get_access_token(scope='https://graph.microsoft.com/.default')
+
+def get_microsoft_defender_access_token():
+    return get_access_token(scope='https://api.securitycenter.microsoft.com/.default')
 
 
 def fetch_all_assets(template_id, page_size=1000):
@@ -697,7 +702,7 @@ def fetch_all_devices_from_platform(platform, url, azure_queue=None, azure_devic
 
     while next_page:
         if time.time() - start_time > 3000:
-            get_access_token()
+            get_azure_access_token()
             start_time = time.time()
 
         current_page, next_page = get_devices_from_curren_page(next_page)
@@ -730,7 +735,7 @@ def user_batch_worker(device_queue, result_dict):
             buffer.clear()
 
 def fetch_devices():
-    get_access_token()
+    get_azure_access_token()
 
     platforms = {
         "intune": "https://graph.microsoft.com/v1.0/deviceManagement/managedDevices",
@@ -868,3 +873,5 @@ end_time = time.time()
 elapsed = end_time - start_time
 
 print(f"\n[✓] Total time: {elapsed:.2f} seconds")
+
+print(get_microsoft_defender_access_token())
