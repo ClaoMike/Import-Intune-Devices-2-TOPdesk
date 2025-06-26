@@ -855,23 +855,41 @@ def update_TOPdesk(to_create_list, to_delete_list, to_update_list):
             except Exception as e:
                 print(f"[✗] {label} task failed: {e}")
 
-start_time = time.time()
+# start_time = time.time()
+#
+# # Fetch devices and assets
+# all_devices, all_assets = fetch_devices_and_assets_in_parallel()
+#
+# # Filter to-dos
+# devices_to_create_list, assets_to_delete_list, assets_to_be_updated = filter_assets_and_devices(
+#     all_devices,
+#     all_assets
+# )
+#
+# # Update TOPdesk
+# update_TOPdesk(devices_to_create_list, assets_to_delete_list, assets_to_be_updated)
+#
+# end_time = time.time()
+# elapsed = end_time - start_time
+#
+# print(f"\n[✓] Total time: {elapsed:.2f} seconds")
 
-# Fetch devices and assets
-all_devices, all_assets = fetch_devices_and_assets_in_parallel()
+########################################################################
 
-# Filter to-dos
-devices_to_create_list, assets_to_delete_list, assets_to_be_updated = filter_assets_and_devices(
-    all_devices,
-    all_assets
-)
+def get_microsoft_defender_devices():
+    response = requests.get(
+        url=f"https://api.security.microsoft.com/api/machines",
+        headers={
+        'Authorization': f'Bearer {get_microsoft_defender_access_token()}',
+        'Content-Type': 'application/json'
+        },
+    )
 
-# Update TOPdesk
-update_TOPdesk(devices_to_create_list, assets_to_delete_list, assets_to_be_updated)
+    if 200 <= response.status_code < 300:
+        return response.json().get('value')
+    else:
+        error_message = f"Error {response.status_code}: {response.text}"
+        raise ValueError(error_message)
 
-end_time = time.time()
-elapsed = end_time - start_time
-
-print(f"\n[✓] Total time: {elapsed:.2f} seconds")
-
-print(get_microsoft_defender_access_token())
+for device in get_microsoft_defender_devices():
+    print(device)
