@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="8aba8601-9510-44b3-b625-41cec93fb9fc" name="Changes" comment="Fetching the Microsoft Defender access token">
+    <list default="true" id="8aba8601-9510-44b3-b625-41cec93fb9fc" name="Changes" comment="Fetching the Microsoft Defender devices">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/preparing_azure_script.py" beforeDir="false" afterPath="$PROJECT_DIR$/preparing_azure_script.py" afterDir="false" />
     </list>
@@ -100,15 +100,7 @@
       <workItem from="1747649430526" duration="8000" />
       <workItem from="1747649539960" duration="448000" />
       <workItem from="1748254423694" duration="27000" />
-      <workItem from="1750922696645" duration="6496000" />
-    </task>
-    <task id="LOCAL-00030" summary="Refactor">
-      <option name="closed" value="true" />
-      <created>1746621167057</created>
-      <option name="number" value="00030" />
-      <option name="presentableId" value="LOCAL-00030" />
-      <option name="project" value="LOCAL" />
-      <updated>1746621167057</updated>
+      <workItem from="1750922696645" duration="7245000" />
     </task>
     <task id="LOCAL-00031" summary="Refactor">
       <option name="closed" value="true" />
@@ -494,14 +486,21 @@
       <option name="project" value="LOCAL" />
       <updated>1750934076520</updated>
     </task>
-    <option name="localTasksCounter" value="79" />
+    <task id="LOCAL-00079" summary="Fetching the Microsoft Defender devices">
+      <option name="closed" value="true" />
+      <created>1750934737115</created>
+      <option name="number" value="00079" />
+      <option name="presentableId" value="LOCAL-00079" />
+      <option name="project" value="LOCAL" />
+      <updated>1750934737115</updated>
+    </task>
+    <option name="localTasksCounter" value="80" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Some inheritance" />
     <MESSAGE value="Assigning all users" />
     <MESSAGE value="Creating the topdesk name" />
     <MESSAGE value="Getting all TOPdesk assets" />
@@ -526,11 +525,12 @@
     <MESSAGE value="Remove some prints" />
     <MESSAGE value="New OS" />
     <MESSAGE value="Fetching the Microsoft Defender access token" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fetching the Microsoft Defender access token" />
+    <MESSAGE value="Fetching the Microsoft Defender devices" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fetching the Microsoft Defender devices" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/PythonProject6$Device.coverage" NAME="Device Coverage Results" MODIFIED="1747233139136" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/PythonProject6$preparing_azure_script.coverage" NAME="preparing_azure_script Coverage Results" MODIFIED="1750934636088" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/PythonProject6$preparing_azure_script.coverage" NAME="preparing_azure_script Coverage Results" MODIFIED="1750935377720" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/PythonProject6$main.coverage" NAME="main Coverage Results" MODIFIED="1747236739552" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/PythonProject6$utils.coverage" NAME="utils Coverage Results" MODIFIED="1746626442203" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/PythonProject6$second_main.coverage" NAME="second_main Coverage Results" MODIFIED="1747215191481" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
