@@ -74,10 +74,12 @@ class TOPdeskAsset:
         self.ownership: Optional[str] = data.get("ownership")
         self.user_id: Optional[str] = data.get("user-id")
 
+        self.last_ip_address: Optional[str] = data.get("last-ip-address")
+        self.exposure_level: Optional[str] = data.get("exposure-level")
+        self.last_external_ip_address: Optional[str] = data.get("last-external-ip-address")
+
     def toString(self):
         return f"{self.id}, {self.name}, {self.intune_id}, {self.azure_ad_registered}, {self.azure_id}, {self.serial_number}, {self.name_1}, {self.manufacturer_1}, {self.model_1}, {self.operating_system}, {self.os_version}, {self.enrollment_date}, {self.last_check_in}, {self.management_certificate_expiration_date}, {self.is_managed}, {self.imei}, {self.encrypted}, {self.subscriber_carrier}, {self.total_storage}, {self.storage}, {self.compliance_status}, {self.ownership}, {self.user_id}"
-
-
 
 class Device:
     class Type(Enum):
@@ -188,6 +190,10 @@ class IntuneDevice(Device):
         self.subscriber_carrier: Optional[str] = data.get("subscriberCarrier")
         self.total_storage_space_in_bytes: Optional[int] = int(data.get("totalStorageSpaceInBytes")) if data.get("totalStorageSpaceInBytes") else None
 
+        self.last_ip_address: Optional[str] = None # "last-ip-address"
+        self.exposure_level: Optional[str] = None # "exposure-level"
+        self.last_external_ip_address: Optional[str] = None # "last-external-ip-address"
+
         # assigning user
         self.user_id = data.get("userId") if data.get("userId") != "" else None
 
@@ -228,6 +234,9 @@ class IntuneDevice(Device):
             "subscriber-carrier": self.subscriber_carrier,
             "total-storage": self.total_storage_space_in_bytes,
             "user-id": self.user_id,
+            "last-ip-address": self.last_ip_address,
+            "exposure-level": self.exposure_level,
+            "last-external-ip-address": self.last_external_ip_address,
         }
 
     def compare_to_asset(self, asset: TOPdeskAsset):
@@ -289,6 +298,15 @@ class IntuneDevice(Device):
         if self.total_storage_space_in_bytes != asset.total_storage:
             new_data["total-storage"] = self.total_storage_space_in_bytes
 
+        if self.exposure_level != asset.exposure_level:
+            new_data["exposure-level"] = self.exposure_level
+
+        if self.last_ip_address != asset.last_ip_address:
+            new_data["last-ip-address"] = self.last_ip_address
+
+        if self.last_external_ip_address != asset.last_external_ip_address:
+            new_data["last-external-ip-address"] = self.last_external_ip_address
+
         return must_update_user, new_data if new_data else None
 
 class AzureDevice(Device):
@@ -326,6 +344,10 @@ class AzureDevice(Device):
             device_id=self.device_id
         )
 
+        self.last_ip_address: Optional[str] = None  # "last-ip-address"
+        self.exposure_level: Optional[str] = None  # "exposure-level"
+        self.last_external_ip_address: Optional[str] = None  # "last-external-ip-address"
+
     def to_JSON(self):
         return {
             "name": self.topdesk_asset_name,  # asset id
@@ -341,6 +363,9 @@ class AzureDevice(Device):
             "os-version": self.operating_system_version,
             "enrollment-date": self.registration_date_time.strftime("%Y-%m-%dT%H:%M:%S.000Z") if self.registration_date_time else None,
             "user-id": self.user_id,
+            "last-ip-address": self.last_ip_address,
+            "exposure-level": self.exposure_level,
+            "last-external-ip-address": self.last_external_ip_address,
         }
 
     def compare_to_asset(self, asset: TOPdeskAsset):
@@ -374,6 +399,15 @@ class AzureDevice(Device):
 
         if self.operating_system_version != asset.os_version:
             new_data["os-version"] = self.operating_system_version
+
+        if self.exposure_level != asset.exposure_level:
+            new_data["exposure-level"] = self.exposure_level
+
+        if self.last_ip_address != asset.last_ip_address:
+            new_data["last-ip-address"] = self.last_ip_address
+
+        if self.last_external_ip_address != asset.last_external_ip_address:
+            new_data["last-external-ip-address"] = self.last_external_ip_address
 
         return must_update_user, new_data if new_data else None
 
@@ -865,10 +899,6 @@ def fetch_devices_and_assets_in_parallel():
         # Wait for devices
         devices = device_future.result()
 
-
-    for id, device in devices.items():
-        print(id)
-
     # sync with Microsoft Defender
     microsoft_defender_devices = get_microsoft_defender_devices()
     for azure_id, md in microsoft_defender_devices.items():
@@ -883,6 +913,9 @@ def fetch_devices_and_assets_in_parallel():
         if device_id is not None:
             devices[device_id].operating_system = md.os_platform
             devices[device_id].operating_system_version = md.version
+            devices[device_id].exposure_level = md.exposure_level
+            devices[device_id].last_ip_address = md.last_ip_address
+            devices[device_id].last_external_ip_address = md.last_external_ip_address
 
     # Transforming the assets into dictionary as well
     all_assets_as_dict = {}
