@@ -7,7 +7,7 @@ import json
 from queue import Queue
 from threading import Thread
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from typing import Optional, List, Dict
 from enum import Enum
 from dotenv import load_dotenv
@@ -25,6 +25,8 @@ topdesk_password = os.getenv("TOPDESK_PASSWORD")
 topdesk_computer_category_id = os.getenv("TOPDESK_COMPUTER_CATEGORY_ID")
 topdesk_mobile_category_id = os.getenv("TOPDESK_MOBILE_CATEGORY_ID")
 topdesk_device_category_id = os.getenv("TOPDESK_DEVICE_CATEGORY_ID")
+
+lenovo_client_id = os.getenv("LENOVO_CLIENT_ID")
 
 access_token = None
 
@@ -422,6 +424,25 @@ class MicrosoftDefenderDevice:
         self.last_ip_address: Optional[str] = data.get("lastIpAddress")
         self.last_external_ip_address: Optional[str] = data.get("lastExternalIpAddress")
         self.exposure_level: Optional[str] = data.get("exposureLevel")
+
+class LenovoDevice:
+    def __init__(self, data: dict):
+        self.is_in_warranty: Optional[bool] = data.get("InWarranty")
+        self.country: Optional[str] = data.get("Country")
+
+        product = data.get("Product")
+        self.lenovo_product_webpage_url: Optional[str] = f"https://pcsupport.lenovo.com/us/en/products/{product}/warranty"
+        self.product_name = product.split("/")[2]
+
+        latest_warranty_date = datetime.min.replace(tzinfo=timezone.utc)
+        for warranty in data.get("Warranty"):
+            end_date = datetime.strptime(warranty["End"], "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
+            if end_date > latest_warranty_date:
+                latest_warranty_date = end_date
+        self.warranty_expiration_date: Optional[datetime] = latest_warranty_date
+
+        current_date = datetime.now(timezone.utc)
+        self.number_of_days_left_until_the_warranty_expires: Optional[int] = (self.warranty_expiration_date - current_date).days + 1 if self.is_in_warranty else 0
 
 def get_access_token(scope: str):
     response = requests.post(
@@ -891,6 +912,20 @@ def update_devices_with_microsoft_defender_data(devices: dict):
 
     return devices
 
+def get_lenovo_warranty_of(serial_number: str):
+    url = f"https://supportapi.lenovo.com/v2.5/warranty?Serial={serial_number}"
+    headers = {
+        "ClientID": lenovo_client_id,
+        "Content-Type": "application/x-www-form-urlencoded"
+    }
+
+    response = requests.post(url, headers=headers)
+
+    if 200 <= response.status_code < 300:
+        return LenovoDevice(response.json())
+    else:
+        raise ValueError(f"Error {response.status_code}: {response.text}")
+
 def fetch_devices_and_assets_in_parallel():
     assets = []
     topdesk_categories = [
@@ -921,7 +956,16 @@ def fetch_devices_and_assets_in_parallel():
         devices = device_future.result()
 
     # sync with Microsoft Defender
-    update_devices_with_microsoft_defender_data(devices)
+    # update_devices_with_microsoft_defender_data(devices)
+
+    # add Lenovo warranties
+    for key, device in devices.items():
+        if hasattr(device, 'manufacturer') and device.manufacturer == "LENOVO" and hasattr(device, 'serial_number') and device.serial_number is not None:
+            lenovo_data = get_lenovo_warranty_of(device.serial_number)
+            print()
+            for attr, value in lenovo_data.__dict__.items():
+                print(f"{attr}: {value}")
+    #
 
     # Transforming the assets into dictionary as well
     all_assets_as_dict = {}
@@ -956,16 +1000,16 @@ start_time = time.time()
 all_devices, all_assets = fetch_devices_and_assets_in_parallel()
 
 # Filter to-dos
-devices_to_create_list, assets_to_delete_list, assets_to_be_updated = filter_assets_and_devices(
-    all_devices,
-    all_assets
-)
-
-# Update TOPdesk
-update_TOPdesk(devices_to_create_list, assets_to_delete_list, assets_to_be_updated)
-
-end_time = time.time()
-elapsed = end_time - start_time
-
-print(f"\n[✓] Total time: {elapsed:.2f} seconds")
+# devices_to_create_list, assets_to_delete_list, assets_to_be_updated = filter_assets_and_devices(
+#     all_devices,
+#     all_assets
+# )
+#
+# # Update TOPdesk
+# update_TOPdesk(devices_to_create_list, assets_to_delete_list, assets_to_be_updated)
+#
+# end_time = time.time()
+# elapsed = end_time - start_time
+#
+# print(f"\n[✓] Total time: {elapsed:.2f} seconds")
 
