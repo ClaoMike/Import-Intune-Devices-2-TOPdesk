@@ -80,6 +80,12 @@ class TOPdeskAsset:
         self.exposure_level: Optional[str] = data.get("exposure-level")
         self.last_external_ip_address: Optional[str] = data.get("last-external-ip-address")
 
+        self.is_in_warranty = data.get("is-in-warranty")
+        self.country = data.get("country-warranty")
+        self.product_name = data.get("model-provided-by-the-manufacturer")
+        self.warranty_expiration_date = data.get("warranty-expiration-date")
+        self.number_of_days_left_until_the_warranty_expires = data.get("number-of-days-until-the-warranty-expires")
+
     def toString(self):
         return f"{self.id}, {self.name}, {self.intune_id}, {self.azure_ad_registered}, {self.azure_id}, {self.serial_number}, {self.name_1}, {self.manufacturer_1}, {self.model_1}, {self.operating_system}, {self.os_version}, {self.enrollment_date}, {self.last_check_in}, {self.management_certificate_expiration_date}, {self.is_managed}, {self.imei}, {self.encrypted}, {self.subscriber_carrier}, {self.total_storage}, {self.storage}, {self.compliance_status}, {self.ownership}, {self.user_id}"
 
@@ -210,6 +216,14 @@ class IntuneDevice(Device):
             device_id=self.azure_ad_device_id
         )
 
+        # Warranty fields (for Lenovo devices only)
+        self.is_in_warranty: Optional[bool] = None
+        self.country: Optional[str] = None
+        self.lenovo_product_webpage_url: Optional[str] = None
+        self.product_name: Optional[str] = None
+        self.warranty_expiration_date: Optional[datetime] = None
+        self.number_of_days_left_until_the_warranty_expires: Optional[int] = None
+
     def to_JSON(self):
         return {
             "name": self.topdesk_asset_name,  # asset id
@@ -239,6 +253,13 @@ class IntuneDevice(Device):
             "last-ip-address": self.last_ip_address,
             "exposure-level": self.exposure_level,
             "last-external-ip-address": self.last_external_ip_address,
+            # Warranty fields (for Lenovo devices only)
+            "is-in-warranty": self.is_in_warranty,
+            "country-warranty": self.country,
+            "model-provided-by-the-manufacturer": self.product_name,
+            "warranty-expiration-date": self.warranty_expiration_date,
+            "number-of-days-until-the-warranty-expires": self.number_of_days_left_until_the_warranty_expires,
+            # "": self.lenovo_product_webpage_url,
         }
 
     def compare_to_asset(self, asset: TOPdeskAsset):
@@ -308,6 +329,21 @@ class IntuneDevice(Device):
 
         if self.last_external_ip_address != asset.last_external_ip_address:
             new_data["last-external-ip-address"] = self.last_external_ip_address
+
+        if self.is_in_warranty != asset.is_in_warranty:
+            new_data["is-in-warranty"] = self.is_in_warranty
+
+        if self.country != asset.country:
+            new_data["country-warranty"] = self.country
+
+        if self.product_name != asset.product_name:
+            new_data["model-provided-by-the-manufacturer"] = self.product_name
+
+        if self.warranty_expiration_date != asset.warranty_expiration_date:
+            new_data["warranty-expiration-date"] = self.warranty_expiration_date
+
+        if self.number_of_days_left_until_the_warranty_expires != asset.number_of_days_left_until_the_warranty_expires:
+            new_data["number-of-days-until-the-warranty-expires"] = self.number_of_days_left_until_the_warranty_expires
 
         return must_update_user, new_data if new_data else None
 
@@ -432,14 +468,17 @@ class LenovoDevice:
 
         product = data.get("Product")
         self.lenovo_product_webpage_url: Optional[str] = f"https://pcsupport.lenovo.com/us/en/products/{product}/warranty"
-        self.product_name = product.split("/")[2]
+        self.product_name = product.split("/")[2] if product is not None else None
 
+        self.warranty_expiration_date: Optional[datetime] = None
         latest_warranty_date = datetime.min.replace(tzinfo=timezone.utc)
-        for warranty in data.get("Warranty"):
-            end_date = datetime.strptime(warranty["End"], "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
-            if end_date > latest_warranty_date:
-                latest_warranty_date = end_date
-        self.warranty_expiration_date: Optional[datetime] = latest_warranty_date
+        warranties = data.get("Warranty")
+        if warranties is not None:
+            for warranty in warranties:
+                end_date = datetime.strptime(warranty["End"], "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
+                if end_date > latest_warranty_date:
+                    latest_warranty_date = end_date
+            self.warranty_expiration_date = latest_warranty_date
 
         current_date = datetime.now(timezone.utc)
         self.number_of_days_left_until_the_warranty_expires: Optional[int] = (self.warranty_expiration_date - current_date).days + 1 if self.is_in_warranty else 0
@@ -956,16 +995,19 @@ def fetch_devices_and_assets_in_parallel():
         devices = device_future.result()
 
     # sync with Microsoft Defender
-    # update_devices_with_microsoft_defender_data(devices)
+    update_devices_with_microsoft_defender_data(devices)
 
     # add Lenovo warranties
     for key, device in devices.items():
         if hasattr(device, 'manufacturer') and device.manufacturer == "LENOVO" and hasattr(device, 'serial_number') and device.serial_number is not None:
             lenovo_data = get_lenovo_warranty_of(device.serial_number)
-            print()
-            for attr, value in lenovo_data.__dict__.items():
-                print(f"{attr}: {value}")
-    #
+
+            device.is_in_warranty = lenovo_data.is_in_warranty
+            device.country = lenovo_data.country
+            device.lenovo_product_webpage_url = lenovo_data.lenovo_product_webpage_url
+            device.product_name = lenovo_data.product_name
+            device.warranty_expiration_date = lenovo_data.warranty_expiration_date
+            device.number_of_days_left_until_the_warranty_expires = lenovo_data.number_of_days_left_until_the_warranty_expires
 
     # Transforming the assets into dictionary as well
     all_assets_as_dict = {}
@@ -1000,16 +1042,16 @@ start_time = time.time()
 all_devices, all_assets = fetch_devices_and_assets_in_parallel()
 
 # Filter to-dos
-# devices_to_create_list, assets_to_delete_list, assets_to_be_updated = filter_assets_and_devices(
-#     all_devices,
-#     all_assets
-# )
-#
-# # Update TOPdesk
-# update_TOPdesk(devices_to_create_list, assets_to_delete_list, assets_to_be_updated)
-#
-# end_time = time.time()
-# elapsed = end_time - start_time
-#
-# print(f"\n[✓] Total time: {elapsed:.2f} seconds")
+devices_to_create_list, assets_to_delete_list, assets_to_be_updated = filter_assets_and_devices(
+    all_devices,
+    all_assets
+)
+
+# Update TOPdesk
+update_TOPdesk(devices_to_create_list, assets_to_delete_list, assets_to_be_updated)
+
+end_time = time.time()
+elapsed = end_time - start_time
+
+print(f"\n[✓] Total time: {elapsed:.2f} seconds")
 
