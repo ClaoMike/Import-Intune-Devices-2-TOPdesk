@@ -870,6 +870,27 @@ def get_microsoft_defender_devices():
         error_message = f"Error {response.status_code}: {response.text}"
         raise ValueError(error_message)
 
+
+def update_devices_with_microsoft_defender_data(devices: dict):
+    microsoft_defender_devices = get_microsoft_defender_devices()
+    for azure_id, md in microsoft_defender_devices.items():
+        device_id = None
+
+        for prefix in ["COMPUTER", "MOBILE", "DEVICE"]:
+            try_device_id = f"{prefix}-{azure_id}"
+            if try_device_id in devices:
+                device_id = try_device_id
+                break
+
+        if device_id is not None:
+            devices[device_id].operating_system = md.os_platform
+            devices[device_id].operating_system_version = md.version
+            devices[device_id].exposure_level = md.exposure_level
+            devices[device_id].last_ip_address = md.last_ip_address
+            devices[device_id].last_external_ip_address = md.last_external_ip_address
+
+    return devices
+
 def fetch_devices_and_assets_in_parallel():
     assets = []
     topdesk_categories = [
@@ -900,22 +921,7 @@ def fetch_devices_and_assets_in_parallel():
         devices = device_future.result()
 
     # sync with Microsoft Defender
-    microsoft_defender_devices = get_microsoft_defender_devices()
-    for azure_id, md in microsoft_defender_devices.items():
-        device_id = None
-
-        for prefix in ["COMPUTER", "MOBILE", "DEVICE"]:
-            try_device_id = f"{prefix}-{azure_id}"
-            if try_device_id in devices:
-                device_id = try_device_id
-                break
-
-        if device_id is not None:
-            devices[device_id].operating_system = md.os_platform
-            devices[device_id].operating_system_version = md.version
-            devices[device_id].exposure_level = md.exposure_level
-            devices[device_id].last_ip_address = md.last_ip_address
-            devices[device_id].last_external_ip_address = md.last_external_ip_address
+    update_devices_with_microsoft_defender_data(devices)
 
     # Transforming the assets into dictionary as well
     all_assets_as_dict = {}
