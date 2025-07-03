@@ -352,6 +352,14 @@ class IntuneDevice(Device):
 
         return must_update_user, new_data if new_data else None
 
+    def set_lenovo_warranty(self, warranty):
+        self.is_in_warranty = warranty.is_in_warranty
+        self.country = warranty.country
+        self.lenovo_product_webpage_url = warranty.lenovo_product_webpage_url
+        self.product_name = warranty.product_name
+        self.warranty_expiration_date = warranty.warranty_expiration_date
+        self.number_of_days_left_until_the_warranty_expires = warranty.number_of_days_left_until_the_warranty_expires
+
 class AzureDevice(Device):
     def __init__(self, data: dict):
         super().__init__()
@@ -980,8 +988,6 @@ def get_lenovo_warranties(params: str):
     else:
         raise ValueError(f"Error {response.status_code}: {response.text}")
 
-
-
 def update_devices_with_lenovo_warranties(devices: dict):
     def chunked(iterable, size):
         for i in range(0, len(iterable), size):
@@ -1008,12 +1014,7 @@ def update_devices_with_lenovo_warranties(devices: dict):
 
     for warranty in lenovo_warranties:
         device = devices[serial_to_device[warranty.serial_number]]
-        device.is_in_warranty = warranty.is_in_warranty
-        device.country = warranty.country
-        device.lenovo_product_webpage_url = warranty.lenovo_product_webpage_url
-        device.product_name = warranty.product_name
-        device.warranty_expiration_date = warranty.warranty_expiration_date
-        device.number_of_days_left_until_the_warranty_expires = warranty.number_of_days_left_until_the_warranty_expires
+        device.set_lenovo_warranty(warranty)
 
 def fetch_devices_and_assets_in_parallel():
     assets = []

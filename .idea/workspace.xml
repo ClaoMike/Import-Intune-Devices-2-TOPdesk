@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="8aba8601-9510-44b3-b625-41cec93fb9fc" name="Changes" comment="Refactor">
+    <list default="true" id="8aba8601-9510-44b3-b625-41cec93fb9fc" name="Changes" comment="Add Lenovo Warranty URLs">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
     </list>
@@ -103,15 +103,7 @@
       <workItem from="1750922696645" duration="15995000" />
       <workItem from="1751016569631" duration="1211000" />
       <workItem from="1751454030840" duration="10764000" />
-      <workItem from="1751523577726" duration="15671000" />
-    </task>
-    <task id="LOCAL-00044" summary="Concurrently fetching Intune and Azure">
-      <option name="closed" value="true" />
-      <created>1747204228582</created>
-      <option name="number" value="00044" />
-      <option name="presentableId" value="LOCAL-00044" />
-      <option name="project" value="LOCAL" />
-      <updated>1747204228582</updated>
+      <workItem from="1751523577726" duration="16354000" />
     </task>
     <task id="LOCAL-00045" summary="Batching the users IDs">
       <option name="closed" value="true" />
@@ -497,14 +489,21 @@
       <option name="project" value="LOCAL" />
       <updated>1751537708613</updated>
     </task>
-    <option name="localTasksCounter" value="93" />
+    <task id="LOCAL-00093" summary="Add Lenovo Warranty URLs">
+      <option name="closed" value="true" />
+      <created>1751541639098</created>
+      <option name="number" value="00093" />
+      <option name="presentableId" value="LOCAL-00093" />
+      <option name="project" value="LOCAL" />
+      <updated>1751541639098</updated>
+    </task>
+    <option name="localTasksCounter" value="94" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Refactor = using Date objects" />
     <MESSAGE value="Refactor = using Date objects for TOPdesk assets as well" />
     <MESSAGE value="Prepared comparison methods" />
     <MESSAGE value="Prepared for update" />
@@ -529,7 +528,8 @@
     <MESSAGE value="Fix fetching" />
     <MESSAGE value="Fix warranty date not working" />
     <MESSAGE value="Refactor" />
-    <option name="LAST_COMMIT_MESSAGE" value="Refactor" />
+    <MESSAGE value="Add Lenovo Warranty URLs" />
+    <option name="LAST_COMMIT_MESSAGE" value="Add Lenovo Warranty URLs" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/PythonProject6$Device.coverage" NAME="Device Coverage Results" MODIFIED="1747233139136" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
