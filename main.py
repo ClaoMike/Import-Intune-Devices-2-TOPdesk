@@ -978,9 +978,40 @@ def get_lenovo_warranties(params: str):
     else:
         raise ValueError(f"Error {response.status_code}: {response.text}")
 
-def chunked(iterable, size):
-    for i in range(0, len(iterable), size):
-        yield iterable[i:i + size]
+
+
+def update_devices_with_lenovo_warranties(devices: dict):
+    def chunked(iterable, size):
+        for i in range(0, len(iterable), size):
+            yield iterable[i:i + size]
+
+    lenovo_warranties = []
+
+    serial_to_device = {
+        device.serial_number: key
+        for key, device in devices.items()
+        if hasattr(device, 'serial_number')
+    }
+
+    serials = [
+        f"Serial={device.serial_number}"
+        for _, device in devices.items()
+        if hasattr(device, 'manufacturer') and device.manufacturer == "LENOVO"
+           and hasattr(device, 'serial_number') and device.serial_number is not None
+    ]
+
+    for batch in chunked(serials, 100):
+        params = "&".join(batch)
+        lenovo_warranties.extend(get_lenovo_warranties(params))
+
+    for warranty in lenovo_warranties:
+        device = devices[serial_to_device[warranty.serial_number]]
+        device.is_in_warranty = warranty.is_in_warranty
+        device.country = warranty.country
+        device.lenovo_product_webpage_url = warranty.lenovo_product_webpage_url
+        device.product_name = warranty.product_name
+        device.warranty_expiration_date = warranty.warranty_expiration_date
+        device.number_of_days_left_until_the_warranty_expires = warranty.number_of_days_left_until_the_warranty_expires
 
 def fetch_devices_and_assets_in_parallel():
     assets = []
@@ -1014,33 +1045,8 @@ def fetch_devices_and_assets_in_parallel():
     # sync with Microsoft Defender
     update_devices_with_microsoft_defender_data(devices)
 
-    lenovo_warranties = []
-
-    serial_to_device = {
-        device.serial_number: key
-        for key, device in devices.items()
-        if hasattr(device, 'serial_number')
-    }
-
-    serials = [
-        f"Serial={device.serial_number}"
-        for _, device in devices.items()
-        if hasattr(device, 'manufacturer') and device.manufacturer == "LENOVO"
-           and hasattr(device, 'serial_number') and device.serial_number is not None
-    ]
-
-    for batch in chunked(serials, 100):
-        params = "&".join(batch)
-        lenovo_warranties.extend(get_lenovo_warranties(params))
-
-    for warranty in lenovo_warranties:
-        device = devices[serial_to_device[warranty.serial_number]]
-        device.is_in_warranty = warranty.is_in_warranty
-        device.country = warranty.country
-        device.lenovo_product_webpage_url = warranty.lenovo_product_webpage_url
-        device.product_name = warranty.product_name
-        device.warranty_expiration_date = warranty.warranty_expiration_date
-        device.number_of_days_left_until_the_warranty_expires = warranty.number_of_days_left_until_the_warranty_expires
+    # sync with Lenovo Warranties
+    update_devices_with_lenovo_warranties(devices)
 
     # Transforming the assets into dictionary as well
     all_assets_as_dict = {}
