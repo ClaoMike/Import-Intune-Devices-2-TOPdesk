@@ -257,7 +257,7 @@ class IntuneDevice(Device):
             "is-in-warranty": self.is_in_warranty,
             "country-warranty": self.country,
             "model-provided-by-the-manufacturer": self.product_name,
-            "warranty-expiration-date": self.warranty_expiration_date,
+            "warranty-expiration-date": self.warranty_expiration_date.strftime("%Y-%m-%dT%H:%M:%S.000Z") if self.warranty_expiration_date else None,
             "number-of-days-until-the-warranty-expires": self.number_of_days_left_until_the_warranty_expires,
             # "": self.lenovo_product_webpage_url,
         }
@@ -340,7 +340,7 @@ class IntuneDevice(Device):
             new_data["model-provided-by-the-manufacturer"] = self.product_name
 
         if self.warranty_expiration_date != asset.warranty_expiration_date:
-            new_data["warranty-expiration-date"] = self.warranty_expiration_date
+            new_data["warranty-expiration-date"] = self.warranty_expiration_date.strftime("%Y-%m-%dT%H:%M:%S.000Z") if self.warranty_expiration_date else None
 
         if self.number_of_days_left_until_the_warranty_expires != asset.number_of_days_left_until_the_warranty_expires:
             new_data["number-of-days-until-the-warranty-expires"] = self.number_of_days_left_until_the_warranty_expires
@@ -492,6 +492,9 @@ class LenovoDevice:
         current_date = datetime.now(timezone.utc)
         self.number_of_days_left_until_the_warranty_expires: Optional[int] = (self.warranty_expiration_date - current_date).days + 1 if self.is_in_warranty else 0
 
+        # remove this
+        # self.warranty_expiration_date = None
+
 def get_access_token(scope: str):
     response = requests.post(
         url=f"https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/token",
@@ -633,7 +636,7 @@ def update_assets(assets):
 
             return f"[✓] Updated asset {asset_id}"
         except Exception as e:
-            return f"[✗] Failed to update {asset_id}: {e}"
+            return f"[✗] Failed to update {asset_id}: {e} \n {new_data}"
 
     with ThreadPoolExecutor(max_workers=10) as executor:
         futures = {
@@ -690,6 +693,7 @@ def update_asset(asset_id, new_data):
         return
     else:
         error_message = f"Error {response.status_code}: {response.text}"
+        print(error_message)
         raise ValueError(error_message)
 
 def get_asset_assignment_link(asset_id):
