@@ -467,8 +467,16 @@ class LenovoDevice:
         self.country: Optional[str] = data.get("Country")
 
         product = data.get("Product")
-        self.lenovo_product_webpage_url: Optional[str] = f"https://pcsupport.lenovo.com/us/en/products/{product}/warranty"
-        self.product_name = product.split("/")[2] if product is not None else None
+        if product is not None:
+            self.lenovo_product_webpage_url: Optional[str] = f"https://pcsupport.lenovo.com/us/en/products/{product}/warranty"
+            tokens = product.split("/")
+            if len(tokens) >= 2:
+                self.product_name: Optional[str] = tokens[2]
+            else:
+                self.product_name: Optional[str] = tokens[-1]
+        else:
+            self.lenovo_product_webpage_url = None
+            self.product_name = None
 
         self.warranty_expiration_date: Optional[datetime] = None
         latest_warranty_date = datetime.min.replace(tzinfo=timezone.utc)
@@ -965,6 +973,17 @@ def get_lenovo_warranty_of(serial_number: str):
     else:
         raise ValueError(f"Error {response.status_code}: {response.text}")
 
+def get_lenovo_warranty(device):
+    if hasattr(device, 'manufacturer') and device.manufacturer == "LENOVO" and hasattr(device, 'serial_number') and device.serial_number is not None:
+        lenovo_data = get_lenovo_warranty_of(device.serial_number)
+
+        device.is_in_warranty = lenovo_data.is_in_warranty
+        device.country = lenovo_data.country
+        device.lenovo_product_webpage_url = lenovo_data.lenovo_product_webpage_url
+        device.product_name = lenovo_data.product_name
+        device.warranty_expiration_date = lenovo_data.warranty_expiration_date
+        device.number_of_days_left_until_the_warranty_expires = lenovo_data.number_of_days_left_until_the_warranty_expires
+
 def fetch_devices_and_assets_in_parallel():
     assets = []
     topdesk_categories = [
@@ -998,16 +1017,8 @@ def fetch_devices_and_assets_in_parallel():
     update_devices_with_microsoft_defender_data(devices)
 
     # add Lenovo warranties
-    for key, device in devices.items():
-        if hasattr(device, 'manufacturer') and device.manufacturer == "LENOVO" and hasattr(device, 'serial_number') and device.serial_number is not None:
-            lenovo_data = get_lenovo_warranty_of(device.serial_number)
-
-            device.is_in_warranty = lenovo_data.is_in_warranty
-            device.country = lenovo_data.country
-            device.lenovo_product_webpage_url = lenovo_data.lenovo_product_webpage_url
-            device.product_name = lenovo_data.product_name
-            device.warranty_expiration_date = lenovo_data.warranty_expiration_date
-            device.number_of_days_left_until_the_warranty_expires = lenovo_data.number_of_days_left_until_the_warranty_expires
+    for _, device in devices.items():
+        get_lenovo_warranty(device)
 
     # Transforming the assets into dictionary as well
     all_assets_as_dict = {}
