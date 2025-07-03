@@ -80,11 +80,12 @@ class TOPdeskAsset:
         self.exposure_level: Optional[str] = data.get("exposure-level")
         self.last_external_ip_address: Optional[str] = data.get("last-external-ip-address")
 
-        self.is_in_warranty = data.get("is-in-warranty")
-        self.country = data.get("country-warranty")
-        self.product_name = data.get("model-provided-by-the-manufacturer")
+        self.is_in_warranty: Optional[bool] = data.get("is-in-warranty")
+        self.country: Optional[str] = data.get("country-warranty")
+        self.product_name: Optional[str] = data.get("model-provided-by-the-manufacturer")
         self.warranty_expiration_date = data.get("warranty-expiration-date")
-        self.number_of_days_left_until_the_warranty_expires = data.get("number-of-days-until-the-warranty-expires")
+        self.number_of_days_left_until_the_warranty_expires: Optional[int] = data.get("number-of-days-until-the-warranty-expires")
+        self.lenovo_product_webpage_url: Optional[str] = data.get("warranty-url")
 
     def toString(self):
         return f"{self.id}, {self.name}, {self.intune_id}, {self.azure_ad_registered}, {self.azure_id}, {self.serial_number}, {self.name_1}, {self.manufacturer_1}, {self.model_1}, {self.operating_system}, {self.os_version}, {self.enrollment_date}, {self.last_check_in}, {self.management_certificate_expiration_date}, {self.is_managed}, {self.imei}, {self.encrypted}, {self.subscriber_carrier}, {self.total_storage}, {self.storage}, {self.compliance_status}, {self.ownership}, {self.user_id}"
@@ -253,13 +254,14 @@ class IntuneDevice(Device):
             "last-ip-address": self.last_ip_address,
             "exposure-level": self.exposure_level,
             "last-external-ip-address": self.last_external_ip_address,
+
             # Warranty fields (for Lenovo devices only)
             "is-in-warranty": self.is_in_warranty,
             "country-warranty": self.country,
             "model-provided-by-the-manufacturer": self.product_name,
             "warranty-expiration-date": self.warranty_expiration_date.strftime("%Y-%m-%dT%H:%M:%S.000Z") if self.warranty_expiration_date else None,
             "number-of-days-until-the-warranty-expires": self.number_of_days_left_until_the_warranty_expires,
-            # "": self.lenovo_product_webpage_url,
+            "warranty-url": self.lenovo_product_webpage_url,
         }
 
     def compare_to_asset(self, asset: TOPdeskAsset):
@@ -344,6 +346,9 @@ class IntuneDevice(Device):
 
         if self.number_of_days_left_until_the_warranty_expires != asset.number_of_days_left_until_the_warranty_expires:
             new_data["number-of-days-until-the-warranty-expires"] = self.number_of_days_left_until_the_warranty_expires
+
+        if self.lenovo_product_webpage_url != asset.lenovo_product_webpage_url:
+            new_data["warranty-url"] = self.lenovo_product_webpage_url
 
         return must_update_user, new_data if new_data else None
 
@@ -491,9 +496,6 @@ class LenovoDevice:
 
         current_date = datetime.now(timezone.utc)
         self.number_of_days_left_until_the_warranty_expires: Optional[int] = (self.warranty_expiration_date - current_date).days + 1 if self.is_in_warranty else 0
-
-        # remove this
-        # self.warranty_expiration_date = None
 
 def get_access_token(scope: str):
     response = requests.post(
