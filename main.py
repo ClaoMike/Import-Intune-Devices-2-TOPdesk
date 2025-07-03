@@ -463,6 +463,7 @@ class MicrosoftDefenderDevice:
 
 class LenovoDevice:
     def __init__(self, data: dict):
+        self.serial_number: Optional[str] = data.get("Serial")
         self.is_in_warranty: Optional[bool] = data.get("InWarranty")
         self.country: Optional[str] = data.get("Country")
 
@@ -470,7 +471,7 @@ class LenovoDevice:
         if product is not None:
             self.lenovo_product_webpage_url: Optional[str] = f"https://pcsupport.lenovo.com/us/en/products/{product}/warranty"
             tokens = product.split("/")
-            if len(tokens) >= 2:
+            if len(tokens) > 2:
                 self.product_name: Optional[str] = tokens[2]
             else:
                 self.product_name: Optional[str] = tokens[-1]
@@ -959,23 +960,8 @@ def update_devices_with_microsoft_defender_data(devices: dict):
 
     return devices
 
-def get_lenovo_warranty_of(serial_number: str):
-    url = f"https://supportapi.lenovo.com/v2.5/warranty?Serial={serial_number}"
-    headers = {
-        "ClientID": lenovo_client_id,
-        "Content-Type": "application/x-www-form-urlencoded"
-    }
-
-    response = requests.post(url, headers=headers)
-
-    if 200 <= response.status_code < 300:
-        return LenovoDevice(response.json())
-    else:
-        raise ValueError(f"Error {response.status_code}: {response.text}")
-
 def get_lenovo_warranties(params: str):
     url = f"https://supportapi.lenovo.com/v2.5/warranty?{params}"
-    print(url)
     headers = {
         "ClientID": lenovo_client_id,
         "Content-Type": "application/x-www-form-urlencoded"
@@ -984,24 +970,9 @@ def get_lenovo_warranties(params: str):
     response = requests.post(url, headers=headers)
 
     if 200 <= response.status_code < 300:
-        print(response.json())
-        # return LenovoDevice(response.json())
+        return [LenovoDevice(item) for item in response.json()]
     else:
         raise ValueError(f"Error {response.status_code}: {response.text}")
-
-def get_lenovo_warranty(device):
-    if hasattr(device, 'manufacturer') and device.manufacturer == "LENOVO" and hasattr(device, 'serial_number') and device.serial_number is not None:
-        lenovo_data = get_lenovo_warranty_of(device.serial_number)
-
-        for attr, value in lenovo_data.__dict__.items():
-            print(f"{attr}: {value}")
-
-        device.is_in_warranty = lenovo_data.is_in_warranty
-        device.country = lenovo_data.country
-        device.lenovo_product_webpage_url = lenovo_data.lenovo_product_webpage_url
-        device.product_name = lenovo_data.product_name
-        device.warranty_expiration_date = lenovo_data.warranty_expiration_date
-        device.number_of_days_left_until_the_warranty_expires = lenovo_data.number_of_days_left_until_the_warranty_expires
 
 def chunked(iterable, size):
     for i in range(0, len(iterable), size):
@@ -1019,8 +990,8 @@ def fetch_devices_and_assets_in_parallel():
         futures = []
 
         # Start asset fetching for each category
-        # for category_id in topdesk_categories:
-        #     futures.append(executor.submit(fetch_all_assets, category_id))
+        for category_id in topdesk_categories:
+            futures.append(executor.submit(fetch_all_assets, category_id))
 
         # Start fetching Azure and Intune devices
         device_future = executor.submit(fetch_devices)
@@ -1037,19 +1008,15 @@ def fetch_devices_and_assets_in_parallel():
         devices = device_future.result()
 
     # sync with Microsoft Defender
-    # update_devices_with_microsoft_defender_data(devices)
+    update_devices_with_microsoft_defender_data(devices)
 
-    # add Lenovo warranties
-    # count = 0
-    # while True:
-    #     params = ""
-    #     count += count
-    #     for _, device in devices.items():
-    #         if hasattr(device, 'manufacturer') and device.manufacturer == "LENOVO" and hasattr(device, 'serial_number') and device.serial_number is not None and count < 100:
-    #             params += f"Serial={device.serial_number}&"
-    #             count += 1
-    #     params = params[:-1]
-    #     get_lenovo_warranties(params)
+    lenovo_warranties = []
+
+    serial_to_device = {
+        device.serial_number: key
+        for key, device in devices.items()
+        if hasattr(device, 'serial_number')
+    }
 
     serials = [
         f"Serial={device.serial_number}"
@@ -1060,22 +1027,16 @@ def fetch_devices_and_assets_in_parallel():
 
     for batch in chunked(serials, 100):
         params = "&".join(batch)
-        get_lenovo_warranties(params)
+        lenovo_warranties.extend(get_lenovo_warranties(params))
 
-    # get_lenovo_warranty(device)
-
-    # with ThreadPoolExecutor(max_workers=10) as executor:
-    #     futures = [executor.submit(get_lenovo_warranty, device) for _, device in devices.items()]
-    #     for future in as_completed(futures):
-    #         try:
-    #             _ = future.result()
-    #         except Exception as e:
-    #             print(f"[✗] Error fetching Lenovo warranty: {e}")
-
-    # for _, device in devices.items():
-    #     print()
-    #     for attr, value in device.__dict__.items():
-    #         print(f"{attr}: {value}")
+    for warranty in lenovo_warranties:
+        device = devices[serial_to_device[warranty.serial_number]]
+        device.is_in_warranty = warranty.is_in_warranty
+        device.country = warranty.country
+        device.lenovo_product_webpage_url = warranty.lenovo_product_webpage_url
+        device.product_name = warranty.product_name
+        device.warranty_expiration_date = warranty.warranty_expiration_date
+        device.number_of_days_left_until_the_warranty_expires = warranty.number_of_days_left_until_the_warranty_expires
 
     # Transforming the assets into dictionary as well
     all_assets_as_dict = {}
@@ -1104,22 +1065,22 @@ def update_TOPdesk(to_create_list, to_delete_list, to_update_list):
             except Exception as e:
                 print(f"[✗] {label} task failed: {e}")
 
-# start_time = time.time()
+start_time = time.time()
 
 # Fetch devices and assets
 all_devices, all_assets = fetch_devices_and_assets_in_parallel()
 
 # Filter to-dos
-# devices_to_create_list, assets_to_delete_list, assets_to_be_updated = filter_assets_and_devices(
-#     all_devices,
-#     all_assets
-# )
-#
-# # Update TOPdesk
-# update_TOPdesk(devices_to_create_list, assets_to_delete_list, assets_to_be_updated)
-#
-# end_time = time.time()
-# elapsed = end_time - start_time
-#
-# print(f"\n[✓] Total time: {elapsed:.2f} seconds")
+devices_to_create_list, assets_to_delete_list, assets_to_be_updated = filter_assets_and_devices(
+    all_devices,
+    all_assets
+)
+
+# Update TOPdesk
+update_TOPdesk(devices_to_create_list, assets_to_delete_list, assets_to_be_updated)
+
+end_time = time.time()
+elapsed = end_time - start_time
+
+print(f"\n[✓] Total time: {elapsed:.2f} seconds")
 
