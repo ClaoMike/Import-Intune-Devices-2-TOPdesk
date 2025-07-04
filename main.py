@@ -74,13 +74,17 @@ topdesk_asset_fields_strings = {
     "country-warranty": str,
     "model-provided-by-the-manufacturer": str,
     "warranty-url": str,
+
     "ismanaged": bool,
     "encrypted": bool,
     "azure-ad-registered": bool,
+
     "enrollment-date": datetime,
     "last-check-in": datetime,
     "management-certificate-expiration-date": datetime,
-    "warranty-expiration-date": datetime
+    "warranty-expiration-date": datetime,
+
+    "number-of-days-until-the-warranty-expires": int
 }
 
 def topdesk_bytes_representation_to_gb_mb_bytes(topdesk_display_value):
@@ -140,7 +144,6 @@ class TOPdeskAsset:
                 self.free_storage: Optional[int] = None
         else:
             self.free_storage: Optional[int] = None
-        self.number_of_days_left_until_the_warranty_expires: Optional[int] = data.get("number-of-days-until-the-warranty-expires")
 
 class Device:
     class Type(Enum):
@@ -407,7 +410,7 @@ class IntuneDevice(Device):
         if self.warranty_expiration_date != asset.warranty_expiration_date:
             new_data["warranty-expiration-date"] = self.warranty_expiration_date.strftime("%Y-%m-%dT%H:%M:%S.000Z") if self.warranty_expiration_date else None
 
-        if self.number_of_days_left_until_the_warranty_expires != asset.number_of_days_left_until_the_warranty_expires:
+        if self.number_of_days_left_until_the_warranty_expires != asset.number_of_days_until_the_warranty_expires:
             new_data["number-of-days-until-the-warranty-expires"] = self.number_of_days_left_until_the_warranty_expires
 
         if self.lenovo_product_webpage_url != asset.warranty_url:
@@ -566,7 +569,7 @@ class LenovoDevice:
             self.warranty_expiration_date = latest_warranty_date
 
         current_date = datetime.now(timezone.utc)
-        self.number_of_days_left_until_the_warranty_expires: Optional[int] = (self.warranty_expiration_date - current_date).days + 1 if self.is_in_warranty == "True" else 0
+        self.number_of_days_left_until_the_warranty_expires: Optional[int] = (self.warranty_expiration_date - current_date).days + 1 if bool(self.is_in_warranty) else 0
 
 def get_access_token(scope: str):
     response = requests.post(
