@@ -51,6 +51,31 @@ mobile_os = {
     'AndroidEnterprise',
 }
 
+topdesk_asset_fields_strings = {
+    "id": str,
+    "name": str,
+    "intune-id": str,
+    "azure-id": str,
+    "serial-number": str,
+    "name-1": str,
+    "manufacturer-1": str,
+    "model-1": str,
+    "operating-system": str,
+    "os-version": str,
+    "imei": str,
+    "subscriber-carrier": str,
+    "compliance-status": str,
+    "ownership": str,
+    "user-id": str,
+    "last-ip-address": str,
+    "exposure-level": str,
+    "last-external-ip-address": str,
+    "is-in-warranty": str,
+    "country-warranty": str,
+    "model-provided-by-the-manufacturer": str,
+    "warranty-url": str
+}
+
 def topdesk_bytes_representation_to_gb_mb_bytes(topdesk_display_value):
     values = [int(re.sub(r'\D', '', part)) for part in topdesk_display_value.split(' ')]
     gb = values[0]
@@ -65,24 +90,21 @@ def gb_mb_bytes_to_bytes(gb=0, mb=0, bytes_val=0):
 
 class TOPdeskAsset:
     def __init__(self, data: dict):
-        self.id: Optional[str] = data.get("unid")
-        self.name: Optional[str] = data.get("name")
-        self.intune_id: Optional[str] = data.get("intune-id")
-        self.azure_ad_registered: Optional[bool] = bool(data.get("azure-ad-registered"))
-        self.azure_id: Optional[str] = data.get("azure-id")
-        self.serial_number: Optional[str] = data.get("serial-number")
-        self.name_1: Optional[str] = data.get("name-1")
-        self.manufacturer_1: Optional[str] = data.get("manufacturer-1")
-        self.model_1: Optional[str] = data.get("model-1")
-        self.operating_system: Optional[str] = data.get("operating-system")
-        self.os_version: Optional[str] = data.get("os-version")
+        global topdesk_asset_fields_strings
+
+        for key, field_type in topdesk_asset_fields_strings.items():
+            attr = key.replace('-', '_')
+            value = data.get(key)
+            setattr(self, attr, value if isinstance(value, field_type) or value is None else field_type(value))
+
         self.enrollment_date: Optional[datetime] = datetime.strptime(data.get("enrollment-date"), "%Y-%m-%dT%H:%M:%S.%f") if data.get("enrollment-date") else None
         self.last_check_in: Optional[datetime] = datetime.strptime(data.get("last-check-in"), "%Y-%m-%dT%H:%M:%S.%f") if data.get("last-check-in") else None
         self.management_certificate_expiration_date: Optional[datetime] = datetime.strptime(data.get("management-certificate-expiration-date"), "%Y-%m-%dT%H:%M:%S.%f") if data.get("management-certificate-expiration-date") else None
+        self.warranty_expiration_date = data.get("warranty-expiration-date")
+
         self.is_managed: Optional[bool] = bool(data.get("ismanaged"))
-        self.imei: Optional[str] = data.get("imei")
         self.encrypted: Optional[bool] = bool(data.get("encrypted"))
-        self.subscriber_carrier: Optional[str] = data.get("subscriber-carrier")
+        self.azure_ad_registered: Optional[bool] = bool(data.get("azure-ad-registered"))
 
         self.total_storage: Optional[int] = None
         if data.get("total-storage"):
@@ -107,21 +129,7 @@ class TOPdeskAsset:
                 self.free_storage: Optional[int] = None
         else:
             self.free_storage: Optional[int] = None
-
-        self.compliance_status: Optional[str] = data.get("compliance-status")
-        self.ownership: Optional[str] = data.get("ownership")
-        self.user_id: Optional[str] = data.get("user-id")
-
-        self.last_ip_address: Optional[str] = data.get("last-ip-address")
-        self.exposure_level: Optional[str] = data.get("exposure-level")
-        self.last_external_ip_address: Optional[str] = data.get("last-external-ip-address")
-
-        self.is_in_warranty: Optional[str] = data.get("is-in-warranty")
-        self.country: Optional[str] = data.get("country-warranty")
-        self.product_name: Optional[str] = data.get("model-provided-by-the-manufacturer")
-        self.warranty_expiration_date = data.get("warranty-expiration-date")
         self.number_of_days_left_until_the_warranty_expires: Optional[int] = data.get("number-of-days-until-the-warranty-expires")
-        self.lenovo_product_webpage_url: Optional[str] = data.get("warranty-url")
 
 class Device:
     class Type(Enum):
@@ -201,7 +209,6 @@ def bytes_to_topdesk_string_representation(bytes_value):
     remaining_bytes = remainder % (1024 ** 2)
 
     return f"{gb}GB {mb}MB {remaining_bytes}Bytes"
-
 
 class IntuneDevice(Device):
     def __init__(self, data: dict):
@@ -379,10 +386,10 @@ class IntuneDevice(Device):
         if self.is_in_warranty != asset.is_in_warranty:
             new_data["is-in-warranty"] = self.is_in_warranty
 
-        if self.country != asset.country:
+        if self.country != asset.country_warranty:
             new_data["country-warranty"] = self.country
 
-        if self.product_name != asset.product_name:
+        if self.product_name != asset.model_provided_by_the_manufacturer:
             new_data["model-provided-by-the-manufacturer"] = self.product_name
 
         if self.warranty_expiration_date != asset.warranty_expiration_date:
@@ -391,7 +398,7 @@ class IntuneDevice(Device):
         if self.number_of_days_left_until_the_warranty_expires != asset.number_of_days_left_until_the_warranty_expires:
             new_data["number-of-days-until-the-warranty-expires"] = self.number_of_days_left_until_the_warranty_expires
 
-        if self.lenovo_product_webpage_url != asset.lenovo_product_webpage_url:
+        if self.lenovo_product_webpage_url != asset.warranty_url:
             new_data["warranty-url"] = self.lenovo_product_webpage_url
 
         return must_update_user, new_data if new_data else None
@@ -578,19 +585,18 @@ def get_microsoft_defender_access_token():
 
 
 def fetch_all_assets(template_id, page_size=1000):
-    all_assets = []
-    page_start = 0
-    has_more = True
-
-    fields = [
+    topdesk_fields = [
         "name", "intune-id", "azure-ad-registered", "azure-id", "serial-number", "name-1", "manufacturer-1", "model-1",
-        "operating-system", "os-version", "enrollment-date", "last-check-in","management-certificate-expiration-date",
+        "operating-system", "os-version", "enrollment-date", "last-check-in", "management-certificate-expiration-date",
         "ismanaged", "imei", "encrypted", "subscriber-carrier", "total-storage", "free-storage", "compliance-status",
         "ownership", "user-id", "last-ip-address", "exposure-level", "last-external-ip-address", "is-in-warranty",
         "country-warranty", "model-provided-by-the-manufacturer", "warranty-expiration-date",
         "number-of-days-until-the-warranty-expires", "warranty-url"
     ]
 
+    all_assets = []
+    page_start = 0
+    has_more = True
 
     base_url = "https://dlfseeds.topdesk.net/tas/api/assetmgmt/assets"
     auth = (topdesk_username, topdesk_password)
@@ -599,7 +605,7 @@ def fetch_all_assets(template_id, page_size=1000):
         "Content-Type": "application/json"
     }
 
-    fields_param = ",".join(fields)
+    fields_param = ",".join(topdesk_fields)
 
     while has_more:
         params = {
