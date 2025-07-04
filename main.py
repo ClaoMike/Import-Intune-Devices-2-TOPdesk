@@ -217,30 +217,11 @@ class IntuneDevice(Device):
 
         # extract relevant data
         self.azure_ad_device_id: Optional[str] = data.get("azureADDeviceId")  # this will be part of the TOPdesk ID
-
-        self.azure_ad_registered: Optional[bool] = bool(data.get("azureADRegistered"))
         self.compliance_state: Optional[str] = data.get("complianceState")
-        self.enrolled_date_time: Optional[datetime] = (
-            datetime.strptime(
-                data.get("enrolledDateTime"),
-                "%Y-%m-%dT%H:%M:%SZ") if data.get("enrolledDateTime") else None
-        )
         self.device_name: Optional[str] = data.get("deviceName")
         self.id: Optional[str] = data.get("id")
         self.imei: Optional[str] = data.get("imei")
-        self.is_encrypted: Optional[bool] = bool(data.get("isEncrypted"))
-        self.is_supervised: Optional[bool] = bool(data.get("isSupervised"))
-        self.last_sync_date_time: Optional[datetime] = (
-            datetime.strptime(
-                data.get("lastSyncDateTime"),
-                "%Y-%m-%dT%H:%M:%SZ") if data.get("lastSyncDateTime") else None
-        )
         self.managed_device_owner_type: Optional[str] = data.get("managedDeviceOwnerType")
-        self.management_certificate_expiration_date: Optional[datetime] = (
-            datetime.strptime(
-                data.get("managementCertificateExpirationDate"),
-                "%Y-%m-%dT%H:%M:%SZ") if data.get("managementCertificateExpirationDate") else None
-        )
         self.manufacturer: Optional[str] = data.get("manufacturer")
         self.model: Optional[str] = data.get("model")
         self.operating_system: Optional[str] = data.get("operatingSystem")
@@ -248,12 +229,28 @@ class IntuneDevice(Device):
         self.serial_number: Optional[str] = data.get("serialNumber")
         self.subscriber_carrier: Optional[str] = data.get("subscriberCarrier")
 
+        self.azure_ad_registered: Optional[bool] = bool(data.get("azureADRegistered"))
+        self.is_encrypted: Optional[bool] = bool(data.get("isEncrypted"))
+        self.is_supervised: Optional[bool] = bool(data.get("isSupervised"))
+
+        self.enrolled_date_time: Optional[datetime] = (
+            datetime.strptime(
+                data.get("enrolledDateTime"),
+                "%Y-%m-%dT%H:%M:%SZ") if data.get("enrolledDateTime") else None
+        )
+        self.last_sync_date_time: Optional[datetime] = (
+            datetime.strptime(
+                data.get("lastSyncDateTime"),
+                "%Y-%m-%dT%H:%M:%SZ") if data.get("lastSyncDateTime") else None
+        )
+        self.management_certificate_expiration_date: Optional[datetime] = (
+            datetime.strptime(
+                data.get("managementCertificateExpirationDate"),
+                "%Y-%m-%dT%H:%M:%SZ") if data.get("managementCertificateExpirationDate") else None
+        )
+
         self.free_storage: Optional[int] = int(data.get("freeStorageSpaceInBytes")) if data.get("freeStorageSpaceInBytes") else None
         self.total_storage: Optional[int] = int(data.get("totalStorageSpaceInBytes")) if data.get("totalStorageSpaceInBytes") else None
-
-        self.last_ip_address: Optional[str] = None # "last-ip-address"
-        self.exposure_level: Optional[str] = None # "exposure-level"
-        self.last_external_ip_address: Optional[str] = None # "last-external-ip-address"
 
         # assigning user
         self.user_id = data.get("userId") if data.get("userId") != "" else None
@@ -268,6 +265,11 @@ class IntuneDevice(Device):
             os=self.operating_system,
             device_id=self.azure_ad_device_id
         )
+
+        # Microsoft Defender values
+        self.last_ip_address: Optional[str] = None  # "last-ip-address"
+        self.exposure_level: Optional[str] = None  # "exposure-level"
+        self.last_external_ip_address: Optional[str] = None  # "last-external-ip-address"
 
         # Warranty fields (for Lenovo devices only)
         self.is_in_warranty: Optional[str] = None
@@ -420,18 +422,19 @@ class AzureDevice(Device):
         # extract relevant data
         self.device_id: Optional[str] = data.get("deviceId")  # part of the TOPdesk ID
         self.id = data.get("id") # needed to fetch the user ID !!
+        self.display_name: Optional[str] = data.get("displayName")
+        self.manufacturer: Optional[str] = data.get("manufacturer")
+        self.model: Optional[str] = data.get("model")
+        self.operating_system: Optional[str] = data.get("operatingSystem")
+        self.operating_system_version: Optional[str] = data.get("operatingSystemVersion")
+
+        self.is_managed: Optional[bool] = bool(data.get("isManaged"))
 
         self.approximate_last_sign_in: Optional[datetime] = (
             datetime.strptime(
                 data.get("approximateLastSignInDateTime"),
                 "%Y-%m-%dT%H:%M:%SZ") if data.get("approximateLastSignInDateTime") else None
         )
-        self.display_name: Optional[str] = data.get("displayName")
-        self.is_managed: Optional[bool] = bool(data.get("isManaged"))
-        self.manufacturer: Optional[str] = data.get("manufacturer")
-        self.model: Optional[str] = data.get("model")
-        self.operating_system: Optional[str] = data.get("operatingSystem")
-        self.operating_system_version: Optional[str] = data.get("operatingSystemVersion")
         self.registration_date_time: Optional[datetime] = (
             datetime.strptime(
                 data.get("registrationDateTime"),
@@ -448,6 +451,7 @@ class AzureDevice(Device):
             device_id=self.device_id
         )
 
+        # Microsoft Defender data
         self.last_ip_address: Optional[str] = None  # "last-ip-address"
         self.exposure_level: Optional[str] = None  # "exposure-level"
         self.last_external_ip_address: Optional[str] = None  # "last-external-ip-address"
@@ -520,7 +524,6 @@ class MicrosoftDefenderDevice:
 
         # extract relevant data
         self.id: Optional[str] = data.get("aadDeviceId") # this is the Azure ID
-
         self.os_platform: Optional[str] = data.get("osPlatform")
         self.version: Optional[str] = data.get("version")
         self.last_ip_address: Optional[str] = data.get("lastIpAddress")
