@@ -52,7 +52,7 @@ mobile_os = {
 }
 
 topdesk_asset_fields_strings = {
-    "id": str,
+    "unid": str,
     "name": str,
     "intune-id": str,
     "azure-id": str,
@@ -76,7 +76,11 @@ topdesk_asset_fields_strings = {
     "warranty-url": str,
     "ismanaged": bool,
     "encrypted": bool,
-    "azure-ad-registered": bool
+    "azure-ad-registered": bool,
+    "enrollment-date": datetime,
+    "last-check-in": datetime,
+    "management-certificate-expiration-date": datetime,
+    "warranty-expiration-date": datetime
 }
 
 def topdesk_bytes_representation_to_gb_mb_bytes(topdesk_display_value):
@@ -103,6 +107,8 @@ class TOPdeskAsset:
                 value = None
             elif field_type is bool:
                 value = str(raw_value).strip().lower() in ("true", "1", "yes", "on")
+            elif field_type is datetime:
+                value = datetime.strptime(raw_value, "%Y-%m-%dT%H:%M:%S.%f")
             else:
                 try:
                     value = field_type(raw_value)
@@ -110,11 +116,6 @@ class TOPdeskAsset:
                     value = None  # fallback if conversion fails
 
             setattr(self, attr, value)
-
-        self.enrollment_date: Optional[datetime] = datetime.strptime(data.get("enrollment-date"), "%Y-%m-%dT%H:%M:%S.%f") if data.get("enrollment-date") else None
-        self.last_check_in: Optional[datetime] = datetime.strptime(data.get("last-check-in"), "%Y-%m-%dT%H:%M:%S.%f") if data.get("last-check-in") else None
-        self.management_certificate_expiration_date: Optional[datetime] = datetime.strptime(data.get("management-certificate-expiration-date"), "%Y-%m-%dT%H:%M:%S.%f") if data.get("management-certificate-expiration-date") else None
-        self.warranty_expiration_date: Optional[datetime] = datetime.strptime(data.get("warranty-expiration-date"), "%Y-%m-%dT%H:%M:%S.%f") if data.get("warranty-expiration-date") else None
 
         self.total_storage: Optional[int] = None
         if data.get("total-storage"):
@@ -364,6 +365,7 @@ class IntuneDevice(Device):
             new_data["ownership"] = self.managed_device_owner_type
 
         if self.management_certificate_expiration_date != asset.management_certificate_expiration_date:
+            print(f"{asset.name}")
             new_data["management-certificate-expiration-date"] = self.management_certificate_expiration_date.strftime("%Y-%m-%dT%H:%M:%S.000Z") if self.management_certificate_expiration_date else None
 
         if self.manufacturer != asset.manufacturer_1:
@@ -664,7 +666,7 @@ def delete_assets(assets):
     if len(assets) != 0:
         print(f"Deleting {len(assets)} assets")
 
-        asset_ids_to_delete = [asset.id for asset in assets if asset.id is not None]
+        asset_ids_to_delete = [asset.unid for asset in assets if asset.unid is not None]
 
         response = requests.post(
             url=f"https://dlfseeds.topdesk.net/tas/api/assetmgmt/assets/delete",
@@ -746,7 +748,7 @@ def filter_assets_and_devices(devices, assets):
         must_update_user, new_data = device.compare_to_asset(asset)
 
         if must_update_user == True or new_data is not None:
-            assets_to_be_updated[asset.id] = (must_update_user, new_data) # NEEDS THE TOPDESK ASSET ID, NOT ITS NAME
+            assets_to_be_updated[asset.unid] = (must_update_user, new_data) # NEEDS THE TOPDESK ASSET ID, NOT ITS NAME
 
     print(f"Assets to be updated: {len(assets_to_be_updated)}")
 
