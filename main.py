@@ -121,27 +121,8 @@ class TOPdeskAsset:
 
             setattr(self, attr, value)
 
-        self.total_storage: Optional[int] = None
-        if data.get("total-storage"):
-            try:
-                self.total_storage: Optional[int] = topdesk_bytes_representation_to_gb_mb_bytes(data.get("total-storage"))
-            except Exception as e:
-                print(e)
-            else:
-                self.total_storage: Optional[int] = None
-        else:
-            self.total_storage: Optional[int] = None
-
-        self.free_storage: Optional[int] = None
-        if data.get("free-storage"):
-            try:
-                self.free_storage: Optional[int] = topdesk_bytes_representation_to_gb_mb_bytes(data.get("free-storage"))
-            except Exception as e:
-                print(e)
-            else:
-                self.free_storage: Optional[int] = None
-        else:
-            self.free_storage: Optional[int] = None
+        self.total_storage: Optional[int] = topdesk_bytes_representation_to_gb_mb_bytes(data.get("total-storage")) if data.get("total-storage") else None
+        self.free_storage: Optional[int] = topdesk_bytes_representation_to_gb_mb_bytes(data.get("free-storage")) if data.get("free-storage") else None
 
 class Device:
     class Type(Enum):
