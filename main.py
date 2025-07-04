@@ -116,7 +116,7 @@ class TOPdeskAsset:
         self.exposure_level: Optional[str] = data.get("exposure-level")
         self.last_external_ip_address: Optional[str] = data.get("last-external-ip-address")
 
-        self.is_in_warranty: Optional[bool] = data.get("is-in-warranty")
+        self.is_in_warranty: Optional[str] = data.get("is-in-warranty")
         self.country: Optional[str] = data.get("country-warranty")
         self.product_name: Optional[str] = data.get("model-provided-by-the-manufacturer")
         self.warranty_expiration_date = data.get("warranty-expiration-date")
@@ -262,7 +262,7 @@ class IntuneDevice(Device):
         )
 
         # Warranty fields (for Lenovo devices only)
-        self.is_in_warranty: Optional[bool] = None
+        self.is_in_warranty: Optional[str] = None
         self.country: Optional[str] = None
         self.lenovo_product_webpage_url: Optional[str] = None
         self.product_name: Optional[str] = None
@@ -521,7 +521,7 @@ class MicrosoftDefenderDevice:
 class LenovoDevice:
     def __init__(self, data: dict):
         self.serial_number: Optional[str] = data.get("Serial")
-        self.is_in_warranty: Optional[bool] = data.get("InWarranty")
+        self.is_in_warranty: Optional[str] = data.get("InWarranty")
         self.country: Optional[str] = data.get("Country")
 
         product = data.get("Product")
@@ -547,7 +547,7 @@ class LenovoDevice:
             self.warranty_expiration_date = latest_warranty_date
 
         current_date = datetime.now(timezone.utc)
-        self.number_of_days_left_until_the_warranty_expires: Optional[int] = (self.warranty_expiration_date - current_date).days + 1 if self.is_in_warranty else 0
+        self.number_of_days_left_until_the_warranty_expires: Optional[int] = (self.warranty_expiration_date - current_date).days + 1 if self.is_in_warranty == "True" else 0
 
 def get_access_token(scope: str):
     response = requests.post(
