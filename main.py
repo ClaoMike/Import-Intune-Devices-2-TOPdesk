@@ -51,6 +51,16 @@ mobile_os = {
     'AndroidEnterprise',
 }
 
+class Storage:
+    @staticmethod
+    def topdesk_bytes_representation_to_gb_mb_bytes(topdesk_display_value):
+        values = [int(re.sub(r'\D', '', part)) for part in topdesk_display_value.split(' ')]
+        gb = values[0]
+        mb = values[1]
+        by = values[2]
+
+        return (gb * (1024 ** 3)) + (mb * (1024 ** 2)) + by
+
 topdesk_asset_fields_strings = {
     "unid": str,
     "name": str,
@@ -84,20 +94,11 @@ topdesk_asset_fields_strings = {
     "management-certificate-expiration-date": datetime,
     "warranty-expiration-date": datetime,
 
-    "number-of-days-until-the-warranty-expires": int
+    "number-of-days-until-the-warranty-expires": int,
+
+    "total-storage": Storage,
+    "free-storage": Storage
 }
-
-def topdesk_bytes_representation_to_gb_mb_bytes(topdesk_display_value):
-    values = [int(re.sub(r'\D', '', part)) for part in topdesk_display_value.split(' ')]
-    gb = values[0]
-    mb = values[1]
-    by = values[2]
-
-    return (gb * (1024 ** 3)) + (mb * (1024 ** 2)) + by
-
-# class Storage:
-#     def __init__(self, value_as_bytes):
-
 
 class TOPdeskAsset:
     def __init__(self, data: dict):
@@ -113,6 +114,8 @@ class TOPdeskAsset:
                 value = str(raw_value).strip().lower() in ("true", "1", "yes", "on")
             elif field_type is datetime:
                 value = datetime.strptime(raw_value, "%Y-%m-%dT%H:%M:%S.%f")
+            elif field_type is Storage:
+                value = Storage.topdesk_bytes_representation_to_gb_mb_bytes(raw_value)
             else:
                 try:
                     value = field_type(raw_value)
@@ -120,9 +123,6 @@ class TOPdeskAsset:
                     value = None  # fallback if conversion fails
 
             setattr(self, attr, value)
-
-        self.total_storage: Optional[int] = topdesk_bytes_representation_to_gb_mb_bytes(data.get("total-storage")) if data.get("total-storage") else None
-        self.free_storage: Optional[int] = topdesk_bytes_representation_to_gb_mb_bytes(data.get("free-storage")) if data.get("free-storage") else None
 
 class Device:
     class Type(Enum):
