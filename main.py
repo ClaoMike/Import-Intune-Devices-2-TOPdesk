@@ -92,12 +92,12 @@ def topdesk_bytes_representation_to_gb_mb_bytes(topdesk_display_value):
     gb = values[0]
     mb = values[1]
     by = values[2]
-    return gb, mb, by
 
-def gb_mb_bytes_to_bytes(gb=0, mb=0, bytes_val=0):
-    """Convert GB, MB, and bytes into total bytes using binary base (1024)."""
-    total_bytes = (gb * (1024 ** 3)) + (mb * (1024 ** 2)) + bytes_val
-    return total_bytes
+    return (gb * (1024 ** 3)) + (mb * (1024 ** 2)) + by
+
+# class Storage:
+#     def __init__(self, value_as_bytes):
+
 
 class TOPdeskAsset:
     def __init__(self, data: dict):
@@ -124,8 +124,7 @@ class TOPdeskAsset:
         self.total_storage: Optional[int] = None
         if data.get("total-storage"):
             try:
-                gb, mb, by = topdesk_bytes_representation_to_gb_mb_bytes(data.get("total-storage"))
-                self.total_storage: Optional[int] = gb_mb_bytes_to_bytes(gb=gb, mb=mb, bytes_val=by)
+                self.total_storage: Optional[int] = topdesk_bytes_representation_to_gb_mb_bytes(data.get("total-storage"))
             except Exception as e:
                 print(e)
             else:
@@ -136,8 +135,7 @@ class TOPdeskAsset:
         self.free_storage: Optional[int] = None
         if data.get("free-storage"):
             try:
-                gb, mb, by = topdesk_bytes_representation_to_gb_mb_bytes(data.get("free-storage"))
-                self.free_storage: Optional[int] = gb_mb_bytes_to_bytes(gb=gb, mb=mb, bytes_val=by)
+                self.free_storage: Optional[int] = topdesk_bytes_representation_to_gb_mb_bytes(data.get("free-storage"))
             except Exception as e:
                 print(e)
             else:
