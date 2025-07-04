@@ -73,8 +73,12 @@ topdesk_asset_fields_strings = {
     "is-in-warranty": str,
     "country-warranty": str,
     "model-provided-by-the-manufacturer": str,
-    "warranty-url": str
+    "warranty-url": str,
+    "ismanaged": bool,
+    "encrypted": bool,
+    "azure-ad-registered": bool
 }
+
 
 def topdesk_bytes_representation_to_gb_mb_bytes(topdesk_display_value):
     values = [int(re.sub(r'\D', '', part)) for part in topdesk_display_value.split(' ')]
@@ -94,17 +98,24 @@ class TOPdeskAsset:
 
         for key, field_type in topdesk_asset_fields_strings.items():
             attr = key.replace('-', '_')
-            value = data.get(key)
-            setattr(self, attr, value if isinstance(value, field_type) or value is None else field_type(value))
+            raw_value = data.get(key)
+
+            if raw_value is None:
+                value = None
+            elif field_type is bool:
+                value = str(raw_value).strip().lower() in ("true", "1", "yes", "on")
+            else:
+                try:
+                    value = field_type(raw_value)
+                except (ValueError, TypeError):
+                    value = None  # fallback if conversion fails
+
+            setattr(self, attr, value)
 
         self.enrollment_date: Optional[datetime] = datetime.strptime(data.get("enrollment-date"), "%Y-%m-%dT%H:%M:%S.%f") if data.get("enrollment-date") else None
         self.last_check_in: Optional[datetime] = datetime.strptime(data.get("last-check-in"), "%Y-%m-%dT%H:%M:%S.%f") if data.get("last-check-in") else None
         self.management_certificate_expiration_date: Optional[datetime] = datetime.strptime(data.get("management-certificate-expiration-date"), "%Y-%m-%dT%H:%M:%S.%f") if data.get("management-certificate-expiration-date") else None
         self.warranty_expiration_date = data.get("warranty-expiration-date")
-
-        self.is_managed: Optional[bool] = bool(data.get("ismanaged"))
-        self.encrypted: Optional[bool] = bool(data.get("encrypted"))
-        self.azure_ad_registered: Optional[bool] = bool(data.get("azure-ad-registered"))
 
         self.total_storage: Optional[int] = None
         if data.get("total-storage"):
@@ -344,7 +355,7 @@ class IntuneDevice(Device):
         if self.is_encrypted != asset.encrypted:
             new_data["encrypted"] = self.is_encrypted
 
-        if self.is_supervised != asset.is_managed:
+        if self.is_supervised != asset.ismanaged:
             new_data["ismanaged"] = self.is_supervised
 
         if self.last_sync_date_time != asset.last_check_in:
@@ -484,7 +495,7 @@ class AzureDevice(Device):
         if self.display_name != asset.name_1:
             new_data["name-1"] = self.display_name
 
-        if self.is_managed != asset.is_managed:
+        if self.is_managed != asset.ismanaged:
             new_data["ismanaged"] = self.is_managed
 
         if self.approximate_last_sign_in != asset.last_check_in:

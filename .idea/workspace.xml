@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="8aba8601-9510-44b3-b625-41cec93fb9fc" name="Changes" comment="Displaying 'Is in warranty' as a true/false value">
+    <list default="true" id="8aba8601-9510-44b3-b625-41cec93fb9fc" name="Changes" comment="Creating some of the attributes on the go">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
     </list>
@@ -105,15 +105,7 @@
       <workItem from="1751016569631" duration="1211000" />
       <workItem from="1751454030840" duration="10764000" />
       <workItem from="1751523577726" duration="17466000" />
-      <workItem from="1751609702163" duration="13757000" />
-    </task>
-    <task id="LOCAL-00052" summary="Getting all TOPdesk assets">
-      <option name="closed" value="true" />
-      <created>1747211777380</created>
-      <option name="number" value="00052" />
-      <option name="presentableId" value="LOCAL-00052" />
-      <option name="project" value="LOCAL" />
-      <updated>1747211777380</updated>
+      <workItem from="1751609702163" duration="14519000" />
     </task>
     <task id="LOCAL-00053" summary="Getting assets and devices in parallel">
       <option name="closed" value="true" />
@@ -499,14 +491,21 @@
       <option name="project" value="LOCAL" />
       <updated>1751623136867</updated>
     </task>
-    <option name="localTasksCounter" value="101" />
+    <task id="LOCAL-00101" summary="Creating some of the attributes on the go">
+      <option name="closed" value="true" />
+      <created>1751625596613</created>
+      <option name="number" value="00101" />
+      <option name="presentableId" value="LOCAL-00101" />
+      <option name="project" value="LOCAL" />
+      <updated>1751625596613</updated>
+    </task>
+    <option name="localTasksCounter" value="102" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Fix bug" />
     <MESSAGE value="More threads" />
     <MESSAGE value="Prepared Azure script" />
     <MESSAGE value="Remove old code" />
@@ -531,12 +530,13 @@
     <MESSAGE value="Remove old comments" />
     <MESSAGE value="Refactor&#10;- translating bytes into human readable format (GB, MB and bytes)&#10;- removed success prints" />
     <MESSAGE value="Displaying 'Is in warranty' as a true/false value" />
-    <option name="LAST_COMMIT_MESSAGE" value="Displaying 'Is in warranty' as a true/false value" />
+    <MESSAGE value="Creating some of the attributes on the go" />
+    <option name="LAST_COMMIT_MESSAGE" value="Creating some of the attributes on the go" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/PythonProject6$Device.coverage" NAME="Device Coverage Results" MODIFIED="1747233139136" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/PythonProject6$preparing_azure_script.coverage" NAME="preparing_azure_script Coverage Results" MODIFIED="1750942257575" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/PythonProject6$main.coverage" NAME="main Coverage Results" MODIFIED="1751625333396" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/PythonProject6$main.coverage" NAME="main Coverage Results" MODIFIED="1751626211575" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/PythonProject6$utils.coverage" NAME="utils Coverage Results" MODIFIED="1746626442203" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/PythonProject6$second_main.coverage" NAME="second_main Coverage Results" MODIFIED="1747215191481" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/PythonProject6$conversions.coverage" NAME="conversions Coverage Results" MODIFIED="1751612864293" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
