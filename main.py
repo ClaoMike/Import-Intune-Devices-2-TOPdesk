@@ -3,6 +3,7 @@ import time
 import requests
 import os
 import json
+import re
 
 from queue import Queue
 from threading import Thread
@@ -50,6 +51,18 @@ mobile_os = {
     'AndroidEnterprise',
 }
 
+def topdesk_bytes_representation_to_gb_mb_bytes(topdesk_display_value):
+    values = [int(re.sub(r'\D', '', part)) for part in topdesk_display_value.split(' ')]
+    gb = values[0]
+    mb = values[1]
+    by = values[2]
+    return gb, mb, by
+
+def gb_mb_bytes_to_bytes(gb=0, mb=0, bytes_val=0):
+    """Convert GB, MB, and bytes into total bytes using binary base (1024)."""
+    total_bytes = (gb * (1024 ** 3)) + (mb * (1024 ** 2)) + bytes_val
+    return total_bytes
+
 class TOPdeskAsset:
     def __init__(self, data: dict):
         self.id: Optional[str] = data.get("unid")
@@ -70,8 +83,31 @@ class TOPdeskAsset:
         self.imei: Optional[str] = data.get("imei")
         self.encrypted: Optional[bool] = bool(data.get("encrypted"))
         self.subscriber_carrier: Optional[str] = data.get("subscriber-carrier")
-        self.total_storage: Optional[int] = int(data.get("total-storage")) if data.get("total-storage") else None
-        self.free_storage: Optional[int] = int(data.get("free-storage")) if data.get("free-storage") else None
+
+        self.total_storage: Optional[int] = None
+        if data.get("total-storage"):
+            try:
+                gb, mb, by = topdesk_bytes_representation_to_gb_mb_bytes(data.get("total-storage"))
+                self.total_storage: Optional[int] = gb_mb_bytes_to_bytes(gb=gb, mb=mb, bytes_val=by)
+            except Exception as e:
+                print(e)
+            else:
+                self.total_storage: Optional[int] = None
+        else:
+            self.total_storage: Optional[int] = None
+
+        self.free_storage: Optional[int] = None
+        if data.get("free-storage"):
+            try:
+                gb, mb, by = topdesk_bytes_representation_to_gb_mb_bytes(data.get("free-storage"))
+                self.free_storage: Optional[int] = gb_mb_bytes_to_bytes(gb=gb, mb=mb, bytes_val=by)
+            except Exception as e:
+                print(e)
+            else:
+                self.free_storage: Optional[int] = None
+        else:
+            self.free_storage: Optional[int] = None
+
         self.compliance_status: Optional[str] = data.get("compliance-status")
         self.ownership: Optional[str] = data.get("ownership")
         self.user_id: Optional[str] = data.get("user-id")
@@ -157,6 +193,16 @@ class Device:
             print("New OS detected - please take action")
             return None
 
+def bytes_to_topdesk_string_representation(bytes_value):
+    """Convert bytes into GB, MB, and remaining bytes using binary base (1024)."""
+    gb = bytes_value // (1024 ** 3)
+    remainder = bytes_value % (1024 ** 3)
+    mb = remainder // (1024 ** 2)
+    remaining_bytes = remainder % (1024 ** 2)
+
+    return f"{gb}GB {mb}MB {remaining_bytes}Bytes"
+
+
 class IntuneDevice(Device):
     def __init__(self, data: dict):
         super().__init__()
@@ -171,7 +217,6 @@ class IntuneDevice(Device):
                 data.get("enrolledDateTime"),
                 "%Y-%m-%dT%H:%M:%SZ") if data.get("enrolledDateTime") else None
         )
-        self.free_storage_space_in_bytes: Optional[int] = int(data.get("freeStorageSpaceInBytes")) if data.get("freeStorageSpaceInBytes") else None
         self.device_name: Optional[str] = data.get("deviceName")
         self.id: Optional[str] = data.get("id")
         self.imei: Optional[str] = data.get("imei")
@@ -194,7 +239,9 @@ class IntuneDevice(Device):
         self.operating_system_version: Optional[str] = data.get("osVersion")
         self.serial_number: Optional[str] = data.get("serialNumber")
         self.subscriber_carrier: Optional[str] = data.get("subscriberCarrier")
-        self.total_storage_space_in_bytes: Optional[int] = int(data.get("totalStorageSpaceInBytes")) if data.get("totalStorageSpaceInBytes") else None
+
+        self.free_storage: Optional[int] = int(data.get("freeStorageSpaceInBytes")) if data.get("freeStorageSpaceInBytes") else None
+        self.total_storage: Optional[int] = int(data.get("totalStorageSpaceInBytes")) if data.get("totalStorageSpaceInBytes") else None
 
         self.last_ip_address: Optional[str] = None # "last-ip-address"
         self.exposure_level: Optional[str] = None # "exposure-level"
@@ -231,7 +278,8 @@ class IntuneDevice(Device):
             "azure-id": self.azure_ad_device_id,
             "compliance-status": self.compliance_state,
             "enrollment-date": self.enrolled_date_time.strftime("%Y-%m-%dT%H:%M:%S.000Z") if self.enrolled_date_time else None,
-            "free-storage": self.free_storage_space_in_bytes,
+            "free-storage": bytes_to_topdesk_string_representation(self.free_storage) if self.free_storage else None,
+            "total-storage": bytes_to_topdesk_string_representation(self.total_storage) if self.total_storage else None,
             "name-1": self.device_name,
             "intune-id": self.id,
             "imei": self.imei,
@@ -246,7 +294,6 @@ class IntuneDevice(Device):
             "os-version": self.operating_system_version,
             "serial-number": self.serial_number,
             "subscriber-carrier": self.subscriber_carrier,
-            "total-storage": self.total_storage_space_in_bytes,
             "user-id": self.user_id,
             "last-ip-address": self.last_ip_address,
             "exposure-level": self.exposure_level,
@@ -275,8 +322,11 @@ class IntuneDevice(Device):
         if self.enrolled_date_time != asset.enrollment_date:
             new_data["enrollment-date"] = self.enrolled_date_time.strftime("%Y-%m-%dT%H:%M:%S.000Z") if self.enrolled_date_time else None
 
-        if self.free_storage_space_in_bytes != asset.free_storage:
-            new_data["free-storage"] = self.free_storage_space_in_bytes
+        if self.free_storage != asset.free_storage:
+            new_data["free-storage"] = bytes_to_topdesk_string_representation(self.free_storage) if self.free_storage else None
+
+        if self.total_storage != asset.total_storage:
+            new_data["total-storage"] = bytes_to_topdesk_string_representation(self.total_storage) if self.total_storage else None
 
         if self.device_name != asset.name_1:
             new_data["name-1"] = self.device_name
@@ -316,9 +366,6 @@ class IntuneDevice(Device):
 
         if self.subscriber_carrier != asset.subscriber_carrier:
             new_data["subscriber-carrier"] = self.subscriber_carrier
-
-        if self.total_storage_space_in_bytes != asset.total_storage:
-            new_data["total-storage"] = self.total_storage_space_in_bytes
 
         if self.exposure_level != asset.exposure_level:
             new_data["exposure-level"] = self.exposure_level
@@ -517,7 +564,7 @@ def get_access_token(scope: str):
     )
 
     if 200 <= response.status_code < 300:
-        print("Successfully obtained access token")
+        print(f"[✓] Successfully obtained access token for scope: {scope}")
         return response.json()['access_token']
     else:
         raise ValueError(f"Error {response.status_code}: {response.text}")
@@ -570,7 +617,6 @@ def fetch_all_assets(template_id, page_size=1000):
         assets_as_json = data.get("dataSet")
         assets = [TOPdeskAsset(asset) for asset in assets_as_json]
         all_assets.extend(assets)
-        print(f"[{template_id}] Fetched {len(assets)} assets (total so far: {len(all_assets)})")
 
         has_more = response.status_code == 206
         page_start += page_size
@@ -643,7 +689,7 @@ def update_assets(assets):
                     topdesk_person_card_id = get_topdesk_user_id_by_mainframe(new_user_id)
                     assign_user(topdesk_person_card_id, asset_id)
 
-            return f"[✓] Updated asset {asset_id}"
+            return None
         except Exception as e:
             return f"[✗] Failed to update {asset_id}: {e} \n {new_data}"
 
@@ -654,7 +700,9 @@ def update_assets(assets):
         }
 
         for future in as_completed(futures):
-            print(future.result())
+            result = future.result()
+            if result is not None:
+                print(result)
 
 
 def filter_assets_and_devices(devices, assets):
@@ -970,8 +1018,7 @@ def update_devices_with_microsoft_defender_data(devices: dict):
             devices[device_id].exposure_level = md.exposure_level
             devices[device_id].last_ip_address = md.last_ip_address
             devices[device_id].last_external_ip_address = md.last_external_ip_address
-
-    return devices
+    print(f"\n[✓] Fetched the Microsoft Defender data!")
 
 def get_lenovo_warranties(params: str):
     url = f"https://supportapi.lenovo.com/v2.5/warranty?{params}"
@@ -1014,6 +1061,8 @@ def update_devices_with_lenovo_warranties(devices: dict):
     for warranty in lenovo_warranties:
         device = devices[serial_to_device[warranty.serial_number]]
         device.set_lenovo_warranty(warranty)
+
+    print(f"\n[✓] Fetched the Lenovo warranties!")
 
 def fetch_devices_and_assets_in_parallel():
     assets = []

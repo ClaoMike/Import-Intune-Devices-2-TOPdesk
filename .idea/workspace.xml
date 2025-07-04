@@ -4,7 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="8aba8601-9510-44b3-b625-41cec93fb9fc" name="Changes" comment="Add long forgotten fields">
+    <list default="true" id="8aba8601-9510-44b3-b625-41cec93fb9fc" name="Changes" comment="Remove old comments">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -104,15 +105,7 @@
       <workItem from="1751016569631" duration="1211000" />
       <workItem from="1751454030840" duration="10764000" />
       <workItem from="1751523577726" duration="17466000" />
-      <workItem from="1751609702163" duration="5071000" />
-    </task>
-    <task id="LOCAL-00049" summary="Some inheritance">
-      <option name="closed" value="true" />
-      <created>1747207572733</created>
-      <option name="number" value="00049" />
-      <option name="presentableId" value="LOCAL-00049" />
-      <option name="project" value="LOCAL" />
-      <updated>1747207572733</updated>
+      <workItem from="1751609702163" duration="10369000" />
     </task>
     <task id="LOCAL-00050" summary="Assigning all users">
       <option name="closed" value="true" />
@@ -498,14 +491,21 @@
       <option name="project" value="LOCAL" />
       <updated>1751615420769</updated>
     </task>
-    <option name="localTasksCounter" value="98" />
+    <task id="LOCAL-00098" summary="Remove old comments">
+      <option name="closed" value="true" />
+      <created>1751615442714</created>
+      <option name="number" value="00098" />
+      <option name="presentableId" value="LOCAL-00098" />
+      <option name="project" value="LOCAL" />
+      <updated>1751615442714</updated>
+    </task>
+    <option name="localTasksCounter" value="99" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Prepared for update" />
     <MESSAGE value="Updating assets" />
     <MESSAGE value="Updating assets - unlinking current user" />
     <MESSAGE value="Fix bug" />
@@ -530,12 +530,13 @@
     <MESSAGE value="Remove unused methods inside the TOPdeskAsset class" />
     <MESSAGE value="Refactor" />
     <MESSAGE value="Add long forgotten fields" />
-    <option name="LAST_COMMIT_MESSAGE" value="Add long forgotten fields" />
+    <MESSAGE value="Remove old comments" />
+    <option name="LAST_COMMIT_MESSAGE" value="Remove old comments" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/PythonProject6$Device.coverage" NAME="Device Coverage Results" MODIFIED="1747233139136" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/PythonProject6$preparing_azure_script.coverage" NAME="preparing_azure_script Coverage Results" MODIFIED="1750942257575" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/PythonProject6$main.coverage" NAME="main Coverage Results" MODIFIED="1751614038725" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/PythonProject6$main.coverage" NAME="main Coverage Results" MODIFIED="1751621760283" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/PythonProject6$utils.coverage" NAME="utils Coverage Results" MODIFIED="1746626442203" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/PythonProject6$second_main.coverage" NAME="second_main Coverage Results" MODIFIED="1747215191481" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/PythonProject6$conversions.coverage" NAME="conversions Coverage Results" MODIFIED="1751612864293" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
