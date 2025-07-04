@@ -61,7 +61,17 @@ class Storage:
 
         return (gb * (1024 ** 3)) + (mb * (1024 ** 2)) + by
 
-topdesk_asset_fields_strings = {
+    @staticmethod
+    def bytes_to_topdesk_string_representation(bytes_value):
+        """Convert bytes into GB, MB, and remaining bytes using binary base (1024)."""
+        gb = bytes_value // (1024 ** 3)
+        remainder = bytes_value % (1024 ** 3)
+        mb = remainder // (1024 ** 2)
+        remaining_bytes = remainder % (1024 ** 2)
+
+        return f"{gb}GB {mb}MB {remaining_bytes}Bytes"
+
+topdesk_asset_fields = {
     "unid": str,
     "name": str,
     "intune-id": str,
@@ -100,11 +110,18 @@ topdesk_asset_fields_strings = {
     "free-storage": Storage
 }
 
+# TODO: populate these, then generate the attributes dynamically for the rest of the classes
+azure_devices_fields = {
+}
+
+intune_devices_fields = {
+}
+
 class TOPdeskAsset:
     def __init__(self, data: dict):
-        global topdesk_asset_fields_strings
+        global topdesk_asset_fields
 
-        for key, field_type in topdesk_asset_fields_strings.items():
+        for key, field_type in topdesk_asset_fields.items():
             attr = key.replace('-', '_')
             raw_value = data.get(key)
 
@@ -194,15 +211,6 @@ class Device:
             print("New OS detected - please take action")
             return None
 
-def bytes_to_topdesk_string_representation(bytes_value):
-    """Convert bytes into GB, MB, and remaining bytes using binary base (1024)."""
-    gb = bytes_value // (1024 ** 3)
-    remainder = bytes_value % (1024 ** 3)
-    mb = remainder // (1024 ** 2)
-    remaining_bytes = remainder % (1024 ** 2)
-
-    return f"{gb}GB {mb}MB {remaining_bytes}Bytes"
-
 class IntuneDevice(Device):
     def __init__(self, data: dict):
         super().__init__()
@@ -278,8 +286,8 @@ class IntuneDevice(Device):
             "azure-id": self.azure_ad_device_id,
             "compliance-status": self.compliance_state,
             "enrollment-date": self.enrolled_date_time.strftime("%Y-%m-%dT%H:%M:%S.000Z") if self.enrolled_date_time else None,
-            "free-storage": bytes_to_topdesk_string_representation(self.free_storage) if self.free_storage else None,
-            "total-storage": bytes_to_topdesk_string_representation(self.total_storage) if self.total_storage else None,
+            "free-storage": Storage.bytes_to_topdesk_string_representation(self.free_storage) if self.free_storage else None,
+            "total-storage": Storage.bytes_to_topdesk_string_representation(self.total_storage) if self.total_storage else None,
             "name-1": self.device_name,
             "intune-id": self.id,
             "imei": self.imei,
@@ -323,10 +331,10 @@ class IntuneDevice(Device):
             new_data["enrollment-date"] = self.enrolled_date_time.strftime("%Y-%m-%dT%H:%M:%S.000Z") if self.enrolled_date_time else None
 
         if self.free_storage != asset.free_storage:
-            new_data["free-storage"] = bytes_to_topdesk_string_representation(self.free_storage) if self.free_storage else None
+            new_data["free-storage"] = Storage.bytes_to_topdesk_string_representation(self.free_storage) if self.free_storage else None
 
         if self.total_storage != asset.total_storage:
-            new_data["total-storage"] = bytes_to_topdesk_string_representation(self.total_storage) if self.total_storage else None
+            new_data["total-storage"] = Storage.bytes_to_topdesk_string_representation(self.total_storage) if self.total_storage else None
 
         if self.device_name != asset.name_1:
             new_data["name-1"] = self.device_name

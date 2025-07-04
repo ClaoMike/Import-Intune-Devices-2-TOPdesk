@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="8aba8601-9510-44b3-b625-41cec93fb9fc" name="Changes" comment="Refactor">
+    <list default="true" id="8aba8601-9510-44b3-b625-41cec93fb9fc" name="Changes" comment="All topdesk asset attributes are dynamically generated">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
     </list>
@@ -105,15 +105,7 @@
       <workItem from="1751016569631" duration="1211000" />
       <workItem from="1751454030840" duration="10764000" />
       <workItem from="1751523577726" duration="17466000" />
-      <workItem from="1751609702163" duration="20989000" />
-    </task>
-    <task id="LOCAL-00059" summary="Creating assets">
-      <option name="closed" value="true" />
-      <created>1747221234792</created>
-      <option name="number" value="00059" />
-      <option name="presentableId" value="LOCAL-00059" />
-      <option name="project" value="LOCAL" />
-      <updated>1747221234792</updated>
+      <workItem from="1751609702163" duration="23296000" />
     </task>
     <task id="LOCAL-00060" summary="Deleting assets">
       <option name="closed" value="true" />
@@ -499,14 +491,21 @@
       <option name="project" value="LOCAL" />
       <updated>1751631482524</updated>
     </task>
-    <option name="localTasksCounter" value="108" />
+    <task id="LOCAL-00108" summary="All topdesk asset attributes are dynamically generated">
+      <option name="closed" value="true" />
+      <created>1751632885542</created>
+      <option name="number" value="00108" />
+      <option name="presentableId" value="LOCAL-00108" />
+      <option name="project" value="LOCAL" />
+      <updated>1751632885542</updated>
+    </task>
+    <option name="localTasksCounter" value="109" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="New OS" />
     <MESSAGE value="Fetching the Microsoft Defender access token" />
     <MESSAGE value="Fetching the Microsoft Defender devices" />
     <MESSAGE value="Saving only those that have an Azure ID" />
@@ -531,7 +530,8 @@
     <MESSAGE value="Fix the topdesk id not being recognized" />
     <MESSAGE value="Moved some of the ints as well" />
     <MESSAGE value="Refactor" />
-    <option name="LAST_COMMIT_MESSAGE" value="Refactor" />
+    <MESSAGE value="All topdesk asset attributes are dynamically generated" />
+    <option name="LAST_COMMIT_MESSAGE" value="All topdesk asset attributes are dynamically generated" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/PythonProject6$Device.coverage" NAME="Device Coverage Results" MODIFIED="1747233139136" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
