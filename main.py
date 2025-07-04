@@ -71,7 +71,7 @@ class TOPdeskAsset:
         self.encrypted: Optional[bool] = bool(data.get("encrypted"))
         self.subscriber_carrier: Optional[str] = data.get("subscriber-carrier")
         self.total_storage: Optional[int] = int(data.get("total-storage")) if data.get("total-storage") else None
-        self.storage: Optional[int] = int(data.get("storage")) if data.get("storage") else None
+        self.free_storage: Optional[int] = int(data.get("free-storage")) if data.get("free-storage") else None
         self.compliance_status: Optional[str] = data.get("compliance-status")
         self.ownership: Optional[str] = data.get("ownership")
         self.user_id: Optional[str] = data.get("user-id")
@@ -231,7 +231,7 @@ class IntuneDevice(Device):
             "azure-id": self.azure_ad_device_id,
             "compliance-status": self.compliance_state,
             "enrollment-date": self.enrolled_date_time.strftime("%Y-%m-%dT%H:%M:%S.000Z") if self.enrolled_date_time else None,
-            "storage": self.free_storage_space_in_bytes,
+            "free-storage": self.free_storage_space_in_bytes,
             "name-1": self.device_name,
             "intune-id": self.id,
             "imei": self.imei,
@@ -275,8 +275,8 @@ class IntuneDevice(Device):
         if self.enrolled_date_time != asset.enrollment_date:
             new_data["enrollment-date"] = self.enrolled_date_time.strftime("%Y-%m-%dT%H:%M:%S.000Z") if self.enrolled_date_time else None
 
-        if self.free_storage_space_in_bytes != asset.storage:
-            new_data["storage"] = self.free_storage_space_in_bytes
+        if self.free_storage_space_in_bytes != asset.free_storage:
+            new_data["free-storage"] = self.free_storage_space_in_bytes
 
         if self.device_name != asset.name_1:
             new_data["name-1"] = self.device_name
@@ -540,7 +540,7 @@ def fetch_all_assets(template_id, page_size=1000):
         "name-1", "manufacturer-1", "model-1", "operating-system", "os-version",
         "enrollment-date", "last-check-in", "management-certificate-expiration-date",
         "ismanaged", "imei", "encrypted", "subscriber-carrier", "total-storage",
-        "storage", "compliance-status", "ownership", "user-id"
+        "free-storage", "compliance-status", "ownership", "user-id"
     ]
 
     base_url = "https://dlfseeds.topdesk.net/tas/api/assetmgmt/assets"
