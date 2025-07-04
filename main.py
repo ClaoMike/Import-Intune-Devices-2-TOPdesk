@@ -79,7 +79,6 @@ topdesk_asset_fields_strings = {
     "azure-ad-registered": bool
 }
 
-
 def topdesk_bytes_representation_to_gb_mb_bytes(topdesk_display_value):
     values = [int(re.sub(r'\D', '', part)) for part in topdesk_display_value.split(' ')]
     gb = values[0]
@@ -115,7 +114,7 @@ class TOPdeskAsset:
         self.enrollment_date: Optional[datetime] = datetime.strptime(data.get("enrollment-date"), "%Y-%m-%dT%H:%M:%S.%f") if data.get("enrollment-date") else None
         self.last_check_in: Optional[datetime] = datetime.strptime(data.get("last-check-in"), "%Y-%m-%dT%H:%M:%S.%f") if data.get("last-check-in") else None
         self.management_certificate_expiration_date: Optional[datetime] = datetime.strptime(data.get("management-certificate-expiration-date"), "%Y-%m-%dT%H:%M:%S.%f") if data.get("management-certificate-expiration-date") else None
-        self.warranty_expiration_date = data.get("warranty-expiration-date")
+        self.warranty_expiration_date: Optional[datetime] = datetime.strptime(data.get("warranty-expiration-date"), "%Y-%m-%dT%H:%M:%S.%f") if data.get("warranty-expiration-date") else None
 
         self.total_storage: Optional[int] = None
         if data.get("total-storage"):
