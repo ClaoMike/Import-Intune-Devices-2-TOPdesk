@@ -536,12 +536,19 @@ def fetch_all_assets(template_id, page_size=1000):
     has_more = True
 
     fields = [
-        "name", "intune-id", "azure-ad-registered", "azure-id", "serial-number",
-        "name-1", "manufacturer-1", "model-1", "operating-system", "os-version",
-        "enrollment-date", "last-check-in", "management-certificate-expiration-date",
-        "ismanaged", "imei", "encrypted", "subscriber-carrier", "total-storage",
-        "free-storage", "compliance-status", "ownership", "user-id"
+        # "name", "intune-id", "azure-ad-registered", "azure-id", "serial-number",
+        # "name-1", "manufacturer-1", "model-1", "operating-system", "os-version",
+        # "enrollment-date", "last-check-in", "management-certificate-expiration-date",
+        # "ismanaged", "imei", "encrypted", "subscriber-carrier", "total-storage",
+        # "free-storage", "compliance-status", "ownership", "user-id"
+        "name", "intune-id", "azure-ad-registered", "azure-id", "serial-number", "name-1", "manufacturer-1", "model-1",
+        "operating-system", "os-version", "enrollment-date", "last-check-in","management-certificate-expiration-date",
+        "ismanaged", "imei", "encrypted", "subscriber-carrier", "total-storage", "free-storage", "compliance-status",
+        "ownership", "user-id", "last-ip-address", "exposure-level", "last-external-ip-address", "is-in-warranty",
+        "country-warranty", "model-provided-by-the-manufacturer", "warranty-expiration-date",
+        "number-of-days-until-the-warranty-expires", "warranty-url"
     ]
+
 
     base_url = "https://dlfseeds.topdesk.net/tas/api/assetmgmt/assets"
     auth = (topdesk_username, topdesk_password)
