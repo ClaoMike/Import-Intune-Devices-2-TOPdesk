@@ -87,9 +87,6 @@ class TOPdeskAsset:
         self.number_of_days_left_until_the_warranty_expires: Optional[int] = data.get("number-of-days-until-the-warranty-expires")
         self.lenovo_product_webpage_url: Optional[str] = data.get("warranty-url")
 
-    def toString(self):
-        return f"{self.id}, {self.name}, {self.intune_id}, {self.azure_ad_registered}, {self.azure_id}, {self.serial_number}, {self.name_1}, {self.manufacturer_1}, {self.model_1}, {self.operating_system}, {self.os_version}, {self.enrollment_date}, {self.last_check_in}, {self.management_certificate_expiration_date}, {self.is_managed}, {self.imei}, {self.encrypted}, {self.subscriber_carrier}, {self.total_storage}, {self.storage}, {self.compliance_status}, {self.ownership}, {self.user_id}"
-
 class Device:
     class Type(Enum):
         """
