@@ -206,7 +206,27 @@ class Device:
         )
 
     def to_JSON(self):
-        return None
+        if isinstance(self, IntuneDevice):
+            comparison_fields = intune_devices_fields
+        else:
+            comparison_fields = azure_devices_fields
+
+        json_data = {}
+
+        for attr, meta in comparison_fields.items():
+            json_key = meta["json_key"]
+            if not json_key:
+                continue  # skip fields not meant for JSON output
+
+            value = getattr(self, attr, None)
+            if isinstance(value, datetime):
+                json_data[json_key] = value.strftime("%Y-%m-%dT%H:%M:%S.000Z")
+            elif isinstance(value, Storage):
+                json_data[json_key] = Storage.bytes_to_topdesk_string_representation(value)
+            else:
+                json_data[json_key] = value
+
+        return json_data
 
     def compare_to_asset(self, asset: TOPdeskAsset):
         if isinstance(self, IntuneDevice):
@@ -336,7 +356,8 @@ class IntuneDevice(Device):
         self.number_of_days_left_until_the_warranty_expires: Optional[int] = None
 
     def to_JSON(self):
-        json_data = {
+        base_data = super().to_JSON()
+        extra_data = {
             "name": self.topdesk_asset_name,
             "type_id": Device.get_device_template(self.device_type),
             "last-ip-address": getattr(self, "last_ip_address", None),
@@ -352,17 +373,7 @@ class IntuneDevice(Device):
             "warranty-url": self.lenovo_product_webpage_url,
         }
 
-        for attr, meta in intune_devices_fields.items():
-            value = getattr(self, attr, None)
-            json_key = meta["json_key"]
-            if isinstance(value, datetime):
-                json_data[json_key] = value.strftime("%Y-%m-%dT%H:%M:%S.000Z")
-            elif isinstance(value, Storage):
-                json_data[json_key] = Storage.bytes_to_topdesk_string_representation(value)
-            else:
-                json_data[json_key] = value
-
-        return json_data
+        return {**base_data, **extra_data}
 
     def compare_to_asset(self, asset: TOPdeskAsset):
         must_update_user, new_data = super().compare_to_asset(asset)
@@ -436,7 +447,8 @@ class AzureDevice(Device):
         self.set_topdesk_asset_name(operating_system=self.operatingSystem, device_id=self.deviceId)
 
     def to_JSON(self):
-        json_data = {
+        base_data = super().to_JSON()
+        extra_data = {
             "name": self.topdesk_asset_name,
             "type_id": Device.get_device_template(self.device_type),
             "user-id": getattr(self, "user_id", None),
@@ -445,20 +457,7 @@ class AzureDevice(Device):
             "last-external-ip-address": getattr(self, "last_external_ip_address", None),
         }
 
-        for attr, meta in azure_devices_fields.items():
-            json_key = meta["json_key"]
-            if not json_key:
-                continue  # skip fields not meant for JSON output
-
-            value = getattr(self, attr, None)
-            if isinstance(value, datetime):
-                json_data[json_key] = value.strftime("%Y-%m-%dT%H:%M:%S.000Z")
-            elif isinstance(value, Storage):
-                json_data[json_key] = Storage.bytes_to_topdesk_string_representation(value)
-            else:
-                json_data[json_key] = value
-
-        return json_data
+        return {**base_data, **extra_data}
 
     def compare_to_asset(self, asset: TOPdeskAsset):
         must_update_user, new_data = super().compare_to_asset(asset)
