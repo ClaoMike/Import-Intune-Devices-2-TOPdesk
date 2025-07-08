@@ -125,13 +125,14 @@ class TOPdeskAsset:
             attr = key.replace('-', '_')
             raw_value = data.get(key)
 
-            if raw_value is None:
+            if raw_value is None or raw_value == "":
                 value = None
             elif field_type is bool:
                 value = str(raw_value).strip().lower() in ("true", "1", "yes", "on")
             elif field_type is datetime:
                 value = datetime.strptime(raw_value, "%Y-%m-%dT%H:%M:%S.%f")
             elif field_type is Storage:
+                # print(raw_value)
                 value = Storage.topdesk_bytes_representation_to_gb_mb_bytes(raw_value)
             else:
                 try:
@@ -149,13 +150,6 @@ class Device:
         COMPUTER = "COMPUTER"
         MOBILE = "MOBILE"
         DEVICE = "DEVICE"
-
-    def __init__(self):
-        # extract relevant data
-        self.user_id: Optional[str] = None
-        self.topdesk_asset_name: Optional[str] = None
-        self.asset_id: Optional[str] = None
-        self.topdesk_person_card_id: Optional[str] = None
 
     def to_JSON(self):
         return None
@@ -214,6 +208,11 @@ class Device:
 class IntuneDevice(Device):
     def __init__(self, data: dict):
         super().__init__()
+
+        self.user_id: Optional[str] = None
+        self.topdesk_asset_name: Optional[str] = None
+        self.asset_id: Optional[str] = None
+        self.topdesk_person_card_id: Optional[str] = None
 
         # extract relevant data
         self.azure_ad_device_id: Optional[str] = data.get("azureADDeviceId")  # this will be part of the TOPdesk ID
@@ -418,6 +417,11 @@ class IntuneDevice(Device):
 class AzureDevice(Device):
     def __init__(self, data: dict):
         super().__init__()
+
+        self.user_id: Optional[str] = None
+        self.topdesk_asset_name: Optional[str] = None
+        self.asset_id: Optional[str] = None
+        self.topdesk_person_card_id: Optional[str] = None
 
         # extract relevant data
         self.device_id: Optional[str] = data.get("deviceId")  # part of the TOPdesk ID
