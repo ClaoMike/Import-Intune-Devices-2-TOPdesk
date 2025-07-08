@@ -186,6 +186,12 @@ class Device:
         MOBILE = "MOBILE"
         DEVICE = "DEVICE"
 
+    def __init__(self):
+        self.user_id: Optional[str] = None
+        self.topdesk_asset_name: Optional[str] = None
+        self.asset_id: Optional[str] = None
+        self.topdesk_person_card_id: Optional[str] = None
+
     def to_JSON(self):
         return None
 
@@ -244,11 +250,6 @@ class IntuneDevice(Device):
     def __init__(self, data: dict):
         super().__init__()
 
-        self.user_id: Optional[str] = None
-        self.topdesk_asset_name: Optional[str] = None
-        self.asset_id: Optional[str] = None
-        self.topdesk_person_card_id: Optional[str] = None
-
         global intune_devices_fields
 
         for key, field_type in intune_devices_fields.items():
@@ -270,46 +271,6 @@ class IntuneDevice(Device):
                     value = None  # fallback if conversion fails
 
             setattr(self, attr, value)
-
-        # extract relevant data
-        # self.azure_ad_device_id: Optional[str] = data.get("azureADDeviceId")  # this will be part of the TOPdesk ID
-        # self.compliance_state: Optional[str] = data.get("complianceState")
-        # self.device_name: Optional[str] = data.get("deviceName")
-        # self.id: Optional[str] = data.get("id")
-        # self.imei: Optional[str] = data.get("imei")
-        # self.managed_device_owner_type: Optional[str] = data.get("managedDeviceOwnerType")
-        # self.manufacturer: Optional[str] = data.get("manufacturer")
-        # self.model: Optional[str] = data.get("model")
-        # self.operating_system: Optional[str] = data.get("operatingSystem")
-        # self.operating_system_version: Optional[str] = data.get("osVersion")
-        # self.serial_number: Optional[str] = data.get("serialNumber")
-        # self.subscriber_carrier: Optional[str] = data.get("subscriberCarrier")
-
-        # self.azure_ad_registered: Optional[bool] = bool(data.get("azureADRegistered"))
-        # self.is_encrypted: Optional[bool] = bool(data.get("isEncrypted"))
-        # self.is_supervised: Optional[bool] = bool(data.get("isSupervised"))
-
-        # self.enrolled_date_time: Optional[datetime] = (
-        #     datetime.strptime(
-        #         data.get("enrolledDateTime"),
-        #         "%Y-%m-%dT%H:%M:%SZ") if data.get("enrolledDateTime") else None
-        # )
-        # self.last_sync_date_time: Optional[datetime] = (
-        #     datetime.strptime(
-        #         data.get("lastSyncDateTime"),
-        #         "%Y-%m-%dT%H:%M:%SZ") if data.get("lastSyncDateTime") else None
-        # )
-        # self.management_certificate_expiration_date: Optional[datetime] = (
-        #     datetime.strptime(
-        #         data.get("managementCertificateExpirationDate"),
-        #         "%Y-%m-%dT%H:%M:%SZ") if data.get("managementCertificateExpirationDate") else None
-        # )
-
-        # self.free_storage: Optional[int] = int(data.get("freeStorageSpaceInBytes")) if data.get("freeStorageSpaceInBytes") else None
-        # self.total_storage: Optional[int] = int(data.get("totalStorageSpaceInBytes")) if data.get("totalStorageSpaceInBytes") else None
-
-        # assigning user
-        # self.user_id = data.get("userId") if data.get("userId") != "" else None
 
         # device type
         self.device_type: Optional[Device.Type] = Device.get_device_type(
@@ -475,41 +436,36 @@ class AzureDevice(Device):
     def __init__(self, data: dict):
         super().__init__()
 
-        self.user_id: Optional[str] = None
-        self.topdesk_asset_name: Optional[str] = None
-        self.asset_id: Optional[str] = None
-        self.topdesk_person_card_id: Optional[str] = None
+        global azure_devices_fields
 
-        # extract relevant data
-        self.device_id: Optional[str] = data.get("deviceId")  # part of the TOPdesk ID
-        self.id = data.get("id") # needed to fetch the user ID !!
-        self.display_name: Optional[str] = data.get("displayName")
-        self.manufacturer: Optional[str] = data.get("manufacturer")
-        self.model: Optional[str] = data.get("model")
-        self.operating_system: Optional[str] = data.get("operatingSystem")
-        self.operating_system_version: Optional[str] = data.get("operatingSystemVersion")
+        for key, field_type in azure_devices_fields.items():
+            attr = key.replace('-', '_')
+            raw_value = data.get(key)
 
-        self.is_managed: Optional[bool] = bool(data.get("isManaged"))
+            if raw_value is None or raw_value == "":
+                value = None
+            elif field_type is bool:
+                value = str(raw_value).strip().lower() in ("true", "1", "yes", "on")
+            elif field_type is datetime:
+                value = datetime.strptime(raw_value, "%Y-%m-%dT%H:%M:%SZ")
+            elif field_type is Storage:
+                value = int(raw_value)
+            else:
+                try:
+                    value = field_type(raw_value)
+                except (ValueError, TypeError):
+                    value = None  # fallback if conversion fails
 
-        self.approximate_last_sign_in: Optional[datetime] = (
-            datetime.strptime(
-                data.get("approximateLastSignInDateTime"),
-                "%Y-%m-%dT%H:%M:%SZ") if data.get("approximateLastSignInDateTime") else None
-        )
-        self.registration_date_time: Optional[datetime] = (
-            datetime.strptime(
-                data.get("registrationDateTime"),
-                "%Y-%m-%dT%H:%M:%SZ") if data.get("registrationDateTime") else None
-        )
+            setattr(self, attr, value)
 
         self.device_type: Optional[Device.Type] = Device.get_device_type(
-            operating_system=self.operating_system
+            operating_system=self.operatingSystem
         )
 
         # compute the topdesk asset name
         self.topdesk_asset_name = Device.compute_topdesk_asset_name(
-            os=self.operating_system,
-            device_id=self.device_id
+            os=self.operatingSystem,
+            device_id=self.deviceId
         )
 
         # Microsoft Defender data
@@ -522,15 +478,15 @@ class AzureDevice(Device):
             "name": self.topdesk_asset_name,  # asset id
             "type_id": Device.get_device_template(self.device_type),  # asset template
 
-            "azure-id": self.device_id,
-            "last-check-in": self.approximate_last_sign_in.strftime("%Y-%m-%dT%H:%M:%S.000Z") if self.approximate_last_sign_in else None,
-            "name-1": self.display_name,
-            "ismanaged": self.is_managed,
+            "azure-id": self.deviceId,
+            "last-check-in": self.approximateLastSignInDateTime.strftime("%Y-%m-%dT%H:%M:%S.000Z") if self.approximateLastSignInDateTime else None,
+            "name-1": self.displayName,
+            "ismanaged": self.isManaged,
             "manufacturer-1": self.manufacturer,
             "model-1": self.model,
-            "operating-system": self.operating_system,
-            "os-version": self.operating_system_version,
-            "enrollment-date": self.registration_date_time.strftime("%Y-%m-%dT%H:%M:%S.000Z") if self.registration_date_time else None,
+            "operating-system": self.operatingSystem,
+            "os-version": self.operatingSystemVersion,
+            "enrollment-date": self.registrationDateTime.strftime("%Y-%m-%dT%H:%M:%S.000Z") if self.registrationDateTime else None,
             "user-id": self.user_id,
             "last-ip-address": self.last_ip_address,
             "exposure-level": self.exposure_level,
@@ -545,17 +501,17 @@ class AzureDevice(Device):
             must_update_user = True
             new_data["user-id"] = self.user_id
 
-        if self.registration_date_time != asset.enrollment_date:
-            new_data["enrollment-date"] = self.registration_date_time.strftime("%Y-%m-%dT%H:%M:%S.000Z") if self.registration_date_time else None
+        if self.registrationDateTime != asset.enrollment_date:
+            new_data["enrollment-date"] = self.registrationDateTime.strftime("%Y-%m-%dT%H:%M:%S.000Z") if self.registrationDateTime else None
 
-        if self.display_name != asset.name_1:
-            new_data["name-1"] = self.display_name
+        if self.displayName != asset.name_1:
+            new_data["name-1"] = self.displayName
 
-        if self.is_managed != asset.ismanaged:
-            new_data["ismanaged"] = self.is_managed
+        if self.isManaged != asset.ismanaged:
+            new_data["ismanaged"] = self.isManaged
 
-        if self.approximate_last_sign_in != asset.last_check_in:
-            new_data["last-check-in"] = self.approximate_last_sign_in.strftime("%Y-%m-%dT%H:%M:%S.000Z") if self.approximate_last_sign_in else None
+        if self.approximateLastSignInDateTime != asset.last_check_in:
+            new_data["last-check-in"] = self.approximateLastSignInDateTime.strftime("%Y-%m-%dT%H:%M:%S.000Z") if self.approximateLastSignInDateTime else None
 
         if self.manufacturer != asset.manufacturer_1:
             new_data["manufacturer-1"] = self.manufacturer
@@ -563,11 +519,11 @@ class AzureDevice(Device):
         if self.model != asset.model_1:
             new_data["model-1"] = self.model
 
-        if self.operating_system != asset.operating_system:
-            new_data["operating-system"] = self.operating_system
+        if self.operatingSystem != asset.operating_system:
+            new_data["operating-system"] = self.operatingSystem
 
-        if self.operating_system_version != asset.os_version:
-            new_data["os-version"] = self.operating_system_version
+        if self.operatingSystemVersion != asset.os_version:
+            new_data["os-version"] = self.operatingSystemVersion
 
         if self.exposure_level != asset.exposure_level:
             new_data["exposure-level"] = self.exposure_level
