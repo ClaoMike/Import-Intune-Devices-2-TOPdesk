@@ -110,11 +110,46 @@ topdesk_asset_fields = {
     "free-storage": Storage
 }
 
-# TODO: populate these, then generate the attributes dynamically for the rest of the classes
 azure_devices_fields = {
+    "deviceId": str,  # part of the TOPdesk ID
+    "id": str, # needed to fetch the user ID !!
+    "displayName": str,
+    "manufacturer": str,
+    "model": str,
+    "operatingSystem": str,
+    "operatingSystemVersion": str,
+
+    "isManaged": bool,
+
+    "approximateLastSignInDateTime": datetime,
+    "registrationDateTime": datetime,
 }
 
 intune_devices_fields = {
+    "userId": str,
+    "azureADDeviceId": str,  # this will be part of the TOPdesk ID
+    "complianceState": str,
+    "deviceName": str,
+    "id": str,
+    "imei": str,
+    "managedDeviceOwnerType": str,
+    "manufacturer": str,
+    "model": str,
+    "operatingSystem": str,
+    "osVersion": str,
+    "serialNumber": str,
+    "subscriberCarrier": str,
+
+    "azureADRegistered": bool,
+    "isEncrypted": bool,
+    "isSupervised": bool,
+
+    "enrolledDateTime": datetime,
+    "lastSyncDateTime": datetime,
+    "managementCertificateExpirationDate": datetime,
+
+    "freeStorageSpaceInBytes": Storage,
+    "totalStorageSpaceInBytes": Storage
 }
 
 class TOPdeskAsset:
