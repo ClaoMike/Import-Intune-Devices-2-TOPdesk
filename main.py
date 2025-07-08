@@ -208,6 +208,40 @@ class Device:
     def to_JSON(self):
         return None
 
+    def compare_to_asset(self, asset: TOPdeskAsset):
+        if isinstance(self, IntuneDevice):
+            comparison_fields = intune_devices_fields
+        else:
+            comparison_fields = azure_devices_fields
+
+        must_update_user = False
+        new_data = {}
+
+        for attr, meta in comparison_fields.items():
+            json_key = meta.get("json_key")
+            asset_attr = meta.get("asset_attr")
+
+            if not json_key or not asset_attr:
+                continue
+
+            self_value = getattr(self, attr, None)
+            asset_value = getattr(asset, asset_attr, None)
+
+            if isinstance(self_value, datetime) and isinstance(asset_value, datetime):
+                if self_value != asset_value:
+                    new_data[json_key] = self_value.strftime("%Y-%m-%dT%H:%M:%S.000Z")
+            elif isinstance(self_value, Storage) and isinstance(asset_value, Storage):
+                if self_value != asset_value:
+                    new_data[json_key] = Storage.bytes_to_topdesk_string_representation(self_value)
+            else:
+                if self_value != asset_value:
+                    new_data[json_key] = self_value
+
+            if json_key == "user-id" and self_value != asset_value:
+                must_update_user = True
+
+        return must_update_user, new_data if new_data else None
+
     def create_in_TOPdesk(self):
         response = requests.post(
             url="https://dlfseeds.topdesk.net/tas/api/assetmgmt/assets",
@@ -331,31 +365,7 @@ class IntuneDevice(Device):
         return json_data
 
     def compare_to_asset(self, asset: TOPdeskAsset):
-        must_update_user = False
-        new_data = {}
-
-        for attr, meta in intune_devices_fields.items():
-            json_key = meta.get("json_key")
-            asset_attr = meta.get("asset_attr")
-
-            if not json_key or not asset_attr:
-                continue
-
-            self_value = getattr(self, attr, None)
-            asset_value = getattr(asset, asset_attr, None)
-
-            if isinstance(self_value, datetime) and isinstance(asset_value, datetime):
-                if self_value != asset_value:
-                    new_data[json_key] = self_value.strftime("%Y-%m-%dT%H:%M:%S.000Z")
-            elif isinstance(self_value, Storage) and isinstance(asset_value, Storage):
-                if self_value != asset_value:
-                    new_data[json_key] = Storage.bytes_to_topdesk_string_representation(self_value)
-            else:
-                if self_value != asset_value:
-                    new_data[json_key] = self_value
-
-            if json_key == "user-id" and self_value != asset_value:
-                must_update_user = True
+        must_update_user, new_data = super().compare_to_asset(asset)
 
         # Compare additional fields not in intune_devices_fields
         extra_fields = {
@@ -451,29 +461,7 @@ class AzureDevice(Device):
         return json_data
 
     def compare_to_asset(self, asset: TOPdeskAsset):
-        must_update_user = False
-        new_data = {}
-
-        # Compare mapped fields
-        for attr, meta in azure_devices_fields.items():
-            json_key = meta.get("json_key")
-            asset_attr = meta.get("asset_attr")
-
-            if not json_key or not asset_attr:
-                continue  # skip fields not meant for comparison
-
-            self_value = getattr(self, attr, None)
-            asset_value = getattr(asset, asset_attr, None)
-
-            if isinstance(self_value, datetime) and isinstance(asset_value, datetime):
-                if self_value != asset_value:
-                    new_data[json_key] = self_value.strftime("%Y-%m-%dT%H:%M:%S.000Z")
-            else:
-                if self_value != asset_value:
-                    new_data[json_key] = self_value
-
-            if json_key == "user-id" and self_value != asset_value:
-                must_update_user = True
+        must_update_user, new_data = super().compare_to_asset(asset)
 
         # Compare additional fields not in azure_devices_fields
         extra_fields = [
@@ -492,7 +480,6 @@ class AzureDevice(Device):
                     must_update_user = True
 
         return must_update_user, new_data if new_data else None
-
 
 class MicrosoftDefenderDevice:
     def __init__(self, data: dict):
