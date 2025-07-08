@@ -192,10 +192,24 @@ class Device:
         self.asset_id: Optional[str] = None
         self.topdesk_person_card_id: Optional[str] = None
 
+        self.device_type: Optional[Device.Type] = None
+        self.topdesk_asset_name: str = None
+
         # Microsoft Defender values
         self.last_ip_address: Optional[str] = None  # "last-ip-address"
         self.exposure_level: Optional[str] = None  # "exposure-level"
         self.last_external_ip_address: Optional[str] = None  # "last-external-ip-address"
+
+    def set_device_type(self, operating_system: str):
+        self.device_type: Optional[Device.Type] = Device.get_device_type(
+            operating_system=operating_system
+        )
+
+    def set_topdesk_asset_name(self, operating_system: str, device_id: str):
+        self.topdesk_asset_name = Device.compute_topdesk_asset_name(
+            os=operating_system,
+            device_id=device_id,
+        )
 
     def to_JSON(self):
         return None
@@ -277,19 +291,10 @@ class IntuneDevice(Device):
 
             setattr(self, attr, value)
 
-        # device type
-        self.device_type: Optional[Device.Type] = Device.get_device_type(
-            operating_system=self.operatingSystem
-        )
-
-        # compute the topdesk asset name
-        self.topdesk_asset_name = Device.compute_topdesk_asset_name(
-            os=self.operatingSystem,
-            device_id=self.azureADDeviceId
-        )
+        self.set_device_type(operating_system=self.operatingSystem)
+        self.set_topdesk_asset_name(operating_system=self.operatingSystem, device_id=self.azureADDeviceId)
 
         # TODO:
-        #  functions for setting the above 2 attributes
         #  make sure the script runs fine
         #  replace Microsoft Defender attributes with a single attribute of type Microsoft Defender
         #  make sure the script runs fine
@@ -468,15 +473,8 @@ class AzureDevice(Device):
 
             setattr(self, attr, value)
 
-        self.device_type: Optional[Device.Type] = Device.get_device_type(
-            operating_system=self.operatingSystem
-        )
-
-        # compute the topdesk asset name
-        self.topdesk_asset_name = Device.compute_topdesk_asset_name(
-            os=self.operatingSystem,
-            device_id=self.deviceId
-        )
+        self.set_device_type(operating_system=self.operatingSystem)
+        self.set_topdesk_asset_name(operating_system=self.operatingSystem, device_id=self.deviceId)
 
     def to_JSON(self):
         return {
