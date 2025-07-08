@@ -111,46 +111,17 @@ topdesk_asset_fields = {
 }
 
 azure_devices_fields = {
-    "deviceId": str,  # part of the TOPdesk ID
-    "id": str, # needed to fetch the user ID !!
-    "displayName": str,
-    "manufacturer": str,
-    "model": str,
-    "operatingSystem": str,
-    "operatingSystemVersion": str,
-
-    "isManaged": bool,
-
-    "approximateLastSignInDateTime": datetime,
-    "registrationDateTime": datetime,
+    "deviceId": {"type": str, "json_key": "azure-id"},
+    "id": {"type": str, "json_key": None},  # internal use only, not exported
+    "displayName": {"type": str, "json_key": "name-1"},
+    "manufacturer": {"type": str, "json_key": "manufacturer-1"},
+    "model": {"type": str, "json_key": "model-1"},
+    "operatingSystem": {"type": str, "json_key": "operating-system"},
+    "operatingSystemVersion": {"type": str, "json_key": "os-version"},
+    "isManaged": {"type": bool, "json_key": "ismanaged"},
+    "approximateLastSignInDateTime": {"type": datetime, "json_key": "last-check-in"},
+    "registrationDateTime": {"type": datetime, "json_key": "enrollment-date"},
 }
-
-# intune_devices_fields = {
-#     "userId": str,
-#     "azureADDeviceId": str,  # this will be part of the TOPdesk ID
-#     "complianceState": str,
-#     "deviceName": str,
-#     "id": str,
-#     "imei": str,
-#     "managedDeviceOwnerType": str,
-#     "manufacturer": str,
-#     "model": str,
-#     "operatingSystem": str,
-#     "osVersion": str,
-#     "serialNumber": str,
-#     "subscriberCarrier": str,
-#
-#     "azureADRegistered": bool,
-#     "isEncrypted": bool,
-#     "isSupervised": bool,
-#
-#     "enrolledDateTime": datetime,
-#     "lastSyncDateTime": datetime,
-#     "managementCertificateExpirationDate": datetime,
-#
-#     "freeStorageSpaceInBytes": Storage,
-#     "totalStorageSpaceInBytes": Storage
-# }
 
 intune_devices_fields = {
     "userId": {"type": str, "json_key": "user-id"},
@@ -192,7 +163,6 @@ class TOPdeskAsset:
             elif field_type is datetime:
                 value = datetime.strptime(raw_value, "%Y-%m-%dT%H:%M:%S.%f")
             elif field_type is Storage:
-                # print(raw_value)
                 value = Storage.topdesk_bytes_representation_to_gb_mb_bytes(raw_value)
             else:
                 try:
@@ -332,14 +302,13 @@ class IntuneDevice(Device):
         self.warranty_expiration_date: Optional[datetime] = None
         self.number_of_days_left_until_the_warranty_expires: Optional[int] = None
 
-#         # TODO:
-#         #  dynamic toJSON() function
-#         #  make sure the script runs fine
-#         #  dynamic comparison
-#         #  make sure the script runs fine
-#         #  replace Microsoft Defender attributes with a single attribute of type Microsoft Defender
-#         #  make sure the script runs fine
-#         #  replace the below attributes with a single attribute of type Lenovo
+# TODO:
+#  make sure the script runs fine
+#  dynamic comparison
+#  make sure the script runs fine
+#  replace Microsoft Defender attributes with a single attribute of type Microsoft Defender
+#  make sure the script runs fine
+#  replace the below attributes with a single attribute of type Lenovo
 
     def to_JSON(self):
         json_data = {
@@ -471,10 +440,9 @@ class AzureDevice(Device):
     def __init__(self, data: dict):
         super().__init__()
 
-        global azure_devices_fields
-
-        for key, field_type in azure_devices_fields.items():
+        for key, meta in azure_devices_fields.items():
             attr = key.replace('-', '_')
+            field_type = meta["type"]
             raw_value = data.get(key)
 
             if raw_value is None or raw_value == "":
@@ -482,14 +450,20 @@ class AzureDevice(Device):
             elif field_type is bool:
                 value = str(raw_value).strip().lower() in ("true", "1", "yes", "on")
             elif field_type is datetime:
-                value = datetime.strptime(raw_value, "%Y-%m-%dT%H:%M:%SZ")
+                try:
+                    value = datetime.strptime(raw_value, "%Y-%m-%dT%H:%M:%SZ")
+                except (ValueError, TypeError):
+                    value = None
             elif field_type is Storage:
-                value = int(raw_value)
+                try:
+                    value = int(raw_value)
+                except (ValueError, TypeError):
+                    value = None
             else:
                 try:
                     value = field_type(raw_value)
                 except (ValueError, TypeError):
-                    value = None  # fallback if conversion fails
+                    value = None
 
             setattr(self, attr, value)
 
@@ -497,24 +471,30 @@ class AzureDevice(Device):
         self.set_topdesk_asset_name(operating_system=self.operatingSystem, device_id=self.deviceId)
 
     def to_JSON(self):
-        return {
-            "name": self.topdesk_asset_name,  # asset id
-            "type_id": Device.get_device_template(self.device_type),  # asset template
-
-            "azure-id": self.deviceId,
-            "last-check-in": self.approximateLastSignInDateTime.strftime("%Y-%m-%dT%H:%M:%S.000Z") if self.approximateLastSignInDateTime else None,
-            "name-1": self.displayName,
-            "ismanaged": self.isManaged,
-            "manufacturer-1": self.manufacturer,
-            "model-1": self.model,
-            "operating-system": self.operatingSystem,
-            "os-version": self.operatingSystemVersion,
-            "enrollment-date": self.registrationDateTime.strftime("%Y-%m-%dT%H:%M:%S.000Z") if self.registrationDateTime else None,
-            "user-id": self.user_id,
-            "last-ip-address": self.last_ip_address,
-            "exposure-level": self.exposure_level,
-            "last-external-ip-address": self.last_external_ip_address,
+        json_data = {
+            "name": self.topdesk_asset_name,
+            "type_id": Device.get_device_template(self.device_type),
+            "user-id": getattr(self, "user_id", None),
+            "last-ip-address": getattr(self, "last_ip_address", None),
+            "exposure-level": getattr(self, "exposure_level", None),
+            "last-external-ip-address": getattr(self, "last_external_ip_address", None),
         }
+
+        for attr, meta in azure_devices_fields.items():
+            json_key = meta["json_key"]
+            if not json_key:
+                continue  # skip fields not meant for JSON output
+
+            value = getattr(self, attr, None)
+            if isinstance(value, datetime):
+                json_data[json_key] = value.strftime("%Y-%m-%dT%H:%M:%S.000Z")
+            elif isinstance(value, Storage):
+                json_data[json_key] = Storage.bytes_to_topdesk_string_representation(value)
+            else:
+                json_data[json_key] = value
+
+        return json_data
+
 
     def compare_to_asset(self, asset: TOPdeskAsset):
         must_update_user = False
