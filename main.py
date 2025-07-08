@@ -111,16 +111,16 @@ topdesk_asset_fields = {
 }
 
 azure_devices_fields = {
-    "deviceId": {"type": str, "json_key": "azure-id"},
-    "id": {"type": str, "json_key": None},  # internal use only, not exported
-    "displayName": {"type": str, "json_key": "name-1"},
-    "manufacturer": {"type": str, "json_key": "manufacturer-1"},
-    "model": {"type": str, "json_key": "model-1"},
-    "operatingSystem": {"type": str, "json_key": "operating-system"},
-    "operatingSystemVersion": {"type": str, "json_key": "os-version"},
-    "isManaged": {"type": bool, "json_key": "ismanaged"},
-    "approximateLastSignInDateTime": {"type": datetime, "json_key": "last-check-in"},
-    "registrationDateTime": {"type": datetime, "json_key": "enrollment-date"},
+    "deviceId": {"type": str, "json_key": "azure-id", "asset_attr": "azure_id"},
+    "id": {"type": str, "json_key": None, "asset_attr": None},  # internal only
+    "displayName": {"type": str, "json_key": "name-1", "asset_attr": "name_1"},
+    "manufacturer": {"type": str, "json_key": "manufacturer-1", "asset_attr": "manufacturer_1"},
+    "model": {"type": str, "json_key": "model-1", "asset_attr": "model_1"},
+    "operatingSystem": {"type": str, "json_key": "operating-system", "asset_attr": "operating_system"},
+    "operatingSystemVersion": {"type": str, "json_key": "os-version", "asset_attr": "os_version"},
+    "isManaged": {"type": bool, "json_key": "ismanaged", "asset_attr": "ismanaged"},
+    "approximateLastSignInDateTime": {"type": datetime, "json_key": "last-check-in", "asset_attr": "last_check_in"},
+    "registrationDateTime": {"type": datetime, "json_key": "enrollment-date", "asset_attr": "enrollment_date"},
 }
 
 intune_devices_fields = {
@@ -146,7 +146,6 @@ intune_devices_fields = {
     "freeStorageSpaceInBytes": {"type": Storage, "json_key": "free-storage"},
     "totalStorageSpaceInBytes": {"type": Storage, "json_key": "total-storage"},
 }
-
 
 class TOPdeskAsset:
     def __init__(self, data: dict):
@@ -303,12 +302,8 @@ class IntuneDevice(Device):
         self.number_of_days_left_until_the_warranty_expires: Optional[int] = None
 
 # TODO:
-#  make sure the script runs fine
 #  dynamic comparison
 #  make sure the script runs fine
-#  replace Microsoft Defender attributes with a single attribute of type Microsoft Defender
-#  make sure the script runs fine
-#  replace the below attributes with a single attribute of type Lenovo
 
     def to_JSON(self):
         json_data = {
@@ -495,49 +490,49 @@ class AzureDevice(Device):
 
         return json_data
 
-
     def compare_to_asset(self, asset: TOPdeskAsset):
         must_update_user = False
         new_data = {}
 
-        if self.user_id != asset.user_id:
-            must_update_user = True
-            new_data["user-id"] = self.user_id
+        # Compare mapped fields
+        for attr, meta in azure_devices_fields.items():
+            json_key = meta.get("json_key")
+            asset_attr = meta.get("asset_attr")
 
-        if self.registrationDateTime != asset.enrollment_date:
-            new_data["enrollment-date"] = self.registrationDateTime.strftime("%Y-%m-%dT%H:%M:%S.000Z") if self.registrationDateTime else None
+            if not json_key or not asset_attr:
+                continue  # skip fields not meant for comparison
 
-        if self.displayName != asset.name_1:
-            new_data["name-1"] = self.displayName
+            self_value = getattr(self, attr, None)
+            asset_value = getattr(asset, asset_attr, None)
 
-        if self.isManaged != asset.ismanaged:
-            new_data["ismanaged"] = self.isManaged
+            if isinstance(self_value, datetime) and isinstance(asset_value, datetime):
+                if self_value != asset_value:
+                    new_data[json_key] = self_value.strftime("%Y-%m-%dT%H:%M:%S.000Z")
+            else:
+                if self_value != asset_value:
+                    new_data[json_key] = self_value
 
-        if self.approximateLastSignInDateTime != asset.last_check_in:
-            new_data["last-check-in"] = self.approximateLastSignInDateTime.strftime("%Y-%m-%dT%H:%M:%S.000Z") if self.approximateLastSignInDateTime else None
+            if json_key == "user-id" and self_value != asset_value:
+                must_update_user = True
 
-        if self.manufacturer != asset.manufacturer_1:
-            new_data["manufacturer-1"] = self.manufacturer
+        # Compare additional fields not in azure_devices_fields
+        extra_fields = [
+            "user_id",
+            "exposure_level",
+            "last_ip_address",
+            "last_external_ip_address"
+        ]
 
-        if self.model != asset.model_1:
-            new_data["model-1"] = self.model
-
-        if self.operatingSystem != asset.operating_system:
-            new_data["operating-system"] = self.operatingSystem
-
-        if self.operatingSystemVersion != asset.os_version:
-            new_data["os-version"] = self.operatingSystemVersion
-
-        if self.exposure_level != asset.exposure_level:
-            new_data["exposure-level"] = self.exposure_level
-
-        if self.last_ip_address != asset.last_ip_address:
-            new_data["last-ip-address"] = self.last_ip_address
-
-        if self.last_external_ip_address != asset.last_external_ip_address:
-            new_data["last-external-ip-address"] = self.last_external_ip_address
+        for field in extra_fields:
+            self_value = getattr(self, field, None)
+            asset_value = getattr(asset, field, None)
+            if self_value != asset_value:
+                new_data[field.replace("_", "-")] = self_value
+                if field == "user_id":
+                    must_update_user = True
 
         return must_update_user, new_data if new_data else None
+
 
 class MicrosoftDefenderDevice:
     def __init__(self, data: dict):
