@@ -192,6 +192,11 @@ class Device:
         self.asset_id: Optional[str] = None
         self.topdesk_person_card_id: Optional[str] = None
 
+        # Microsoft Defender values
+        self.last_ip_address: Optional[str] = None  # "last-ip-address"
+        self.exposure_level: Optional[str] = None  # "exposure-level"
+        self.last_external_ip_address: Optional[str] = None  # "last-external-ip-address"
+
     def to_JSON(self):
         return None
 
@@ -282,11 +287,6 @@ class IntuneDevice(Device):
             os=self.operatingSystem,
             device_id=self.azureADDeviceId
         )
-
-        # Microsoft Defender values
-        self.last_ip_address: Optional[str] = None  # "last-ip-address"
-        self.exposure_level: Optional[str] = None  # "exposure-level"
-        self.last_external_ip_address: Optional[str] = None  # "last-external-ip-address"
 
         # Warranty fields (for Lenovo devices only)
         self.is_in_warranty: Optional[str] = None
@@ -467,11 +467,6 @@ class AzureDevice(Device):
             os=self.operatingSystem,
             device_id=self.deviceId
         )
-
-        # Microsoft Defender data
-        self.last_ip_address: Optional[str] = None  # "last-ip-address"
-        self.exposure_level: Optional[str] = None  # "exposure-level"
-        self.last_external_ip_address: Optional[str] = None  # "last-external-ip-address"
 
     def to_JSON(self):
         return {
