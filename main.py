@@ -332,35 +332,6 @@ class IntuneDevice(Device):
         self.warranty_expiration_date: Optional[datetime] = None
         self.number_of_days_left_until_the_warranty_expires: Optional[int] = None
 
-# class IntuneDevice(Device):
-#     def __init__(self, data: dict):
-#         super().__init__()
-#
-#         global intune_devices_fields
-#
-#         for key, field_type in intune_devices_fields.items():
-#             attr = key.replace('-', '_')
-#             raw_value = data.get(key)
-#
-#             if raw_value is None or raw_value == "":
-#                 value = None
-#             elif field_type is bool:
-#                 value = str(raw_value).strip().lower() in ("true", "1", "yes", "on")
-#             elif field_type is datetime:
-#                 value = datetime.strptime(raw_value, "%Y-%m-%dT%H:%M:%SZ")
-#             elif field_type is Storage:
-#                 value = int(raw_value)
-#             else:
-#                 try:
-#                     value = field_type(raw_value)
-#                 except (ValueError, TypeError):
-#                     value = None  # fallback if conversion fails
-#
-#             setattr(self, attr, value)
-#
-#         self.set_device_type(operating_system=self.operatingSystem)
-#         self.set_topdesk_asset_name(operating_system=self.operatingSystem, device_id=self.azureADDeviceId)
-#
 #         # TODO:
 #         #  dynamic toJSON() function
 #         #  make sure the script runs fine
@@ -369,14 +340,6 @@ class IntuneDevice(Device):
 #         #  replace Microsoft Defender attributes with a single attribute of type Microsoft Defender
 #         #  make sure the script runs fine
 #         #  replace the below attributes with a single attribute of type Lenovo
-#
-#         # Warranty fields (for Lenovo devices only)
-#         self.is_in_warranty: Optional[str] = None
-#         self.country: Optional[str] = None
-#         self.lenovo_product_webpage_url: Optional[str] = None
-#         self.product_name: Optional[str] = None
-#         self.warranty_expiration_date: Optional[datetime] = None
-#         self.number_of_days_left_until_the_warranty_expires: Optional[int] = None
 
     def to_JSON(self):
         json_data = {
@@ -406,45 +369,6 @@ class IntuneDevice(Device):
                 json_data[json_key] = value
 
         return json_data
-
-    # def to_JSON(self):
-    #     return {
-    #         "name": self.topdesk_asset_name,  # asset id
-    #         "type_id": Device.get_device_template(self.device_type),  # asset template
-    #
-    #         "azure-ad-registered": self.azureADRegistered,
-    #         "azure-id": self.azureADDeviceId,
-    #         "compliance-status": self.complianceState,
-    #         "enrollment-date": self.enrolledDateTime.strftime("%Y-%m-%dT%H:%M:%S.000Z") if self.enrolledDateTime else None,
-    #         "free-storage": Storage.bytes_to_topdesk_string_representation(self.freeStorageSpaceInBytes) if self.freeStorageSpaceInBytes else None,
-    #         "total-storage": Storage.bytes_to_topdesk_string_representation(self.totalStorageSpaceInBytes) if self.totalStorageSpaceInBytes else None,
-    #         "name-1": self.deviceName,
-    #         "intune-id": self.id,
-    #         "imei": self.imei,
-    #         "encrypted": self.isEncrypted,
-    #         "ismanaged": self.isSupervised,
-    #         "last-check-in": self.lastSyncDateTime.strftime("%Y-%m-%dT%H:%M:%S.000Z") if self.lastSyncDateTime else None,
-    #         "ownership": self.managedDeviceOwnerType,
-    #         "management-certificate-expiration-date": self.managementCertificateExpirationDate.strftime("%Y-%m-%dT%H:%M:%S.000Z") if self.managementCertificateExpirationDate else None,
-    #         "manufacturer-1": self.manufacturer,
-    #         "model-1": self.model,
-    #         "operating-system": self.operatingSystem,
-    #         "os-version": self.osVersion,
-    #         "serial-number": self.serialNumber,
-    #         "subscriber-carrier": self.subscriberCarrier,
-    #         "user-id": self.userId,
-    #         "last-ip-address": self.last_ip_address,
-    #         "exposure-level": self.exposure_level,
-    #         "last-external-ip-address": self.last_external_ip_address,
-    #
-    #         # Warranty fields (for Lenovo devices only)
-    #         "is-in-warranty": self.is_in_warranty,
-    #         "country-warranty": self.country,
-    #         "model-provided-by-the-manufacturer": self.product_name,
-    #         "warranty-expiration-date": self.warranty_expiration_date.strftime("%Y-%m-%dT%H:%M:%S.000Z") if self.warranty_expiration_date else None,
-    #         "number-of-days-until-the-warranty-expires": self.number_of_days_left_until_the_warranty_expires,
-    #         "warranty-url": self.lenovo_product_webpage_url,
-    #     }
 
     def compare_to_asset(self, asset: TOPdeskAsset):
         must_update_user = False
