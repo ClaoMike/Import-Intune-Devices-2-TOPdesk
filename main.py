@@ -295,13 +295,13 @@ class IntuneDevice(Device):
         self.set_topdesk_asset_name(operating_system=self.operatingSystem, device_id=self.azureADDeviceId)
 
         # TODO:
+        #  dynamic toJSON() function
+        #  make sure the script runs fine
+        #  dynamic comparison
         #  make sure the script runs fine
         #  replace Microsoft Defender attributes with a single attribute of type Microsoft Defender
         #  make sure the script runs fine
         #  replace the below attributes with a single attribute of type Lenovo
-        #  dynamic toJSON() function
-        #  make sure the script runs fine
-        #  dynamic comparison
 
         # Warranty fields (for Lenovo devices only)
         self.is_in_warranty: Optional[str] = None
@@ -1043,9 +1043,9 @@ def update_devices_with_microsoft_defender_data(devices: dict):
                 device_id = try_device_id
                 break
 
-        if device_id is not None:
-            devices[device_id].operating_system = md.os_platform
-            devices[device_id].operating_system_version = md.version
+        if device_id is not None and isinstance(devices[device_id], IntuneDevice):
+            devices[device_id].operatingSystem = md.os_platform
+            devices[device_id].osVersion = md.version
             devices[device_id].exposure_level = md.exposure_level
             devices[device_id].last_ip_address = md.last_ip_address
             devices[device_id].last_external_ip_address = md.last_external_ip_address
@@ -1125,10 +1125,10 @@ def fetch_devices_and_assets_in_parallel():
         devices = device_future.result()
 
     # sync with Microsoft Defender
-    # update_devices_with_microsoft_defender_data(devices)
+    update_devices_with_microsoft_defender_data(devices)
 
     # sync with Lenovo Warranties
-    # update_devices_with_lenovo_warranties(devices)
+    update_devices_with_lenovo_warranties(devices)
 
     # Transforming the assets into dictionary as well
     all_assets_as_dict = {}
@@ -1157,22 +1157,22 @@ def update_TOPdesk(to_create_list, to_delete_list, to_update_list):
             except Exception as e:
                 print(f"[✗] {label} task failed: {e}")
 
-# start_time = time.time()
+start_time = time.time()
 
 # Fetch devices and assets
 all_devices, all_assets = fetch_devices_and_assets_in_parallel()
 
 # Filter to-dos
-# devices_to_create_list, assets_to_delete_list, assets_to_be_updated = filter_assets_and_devices(
-#     all_devices,
-#     all_assets
-# )
+devices_to_create_list, assets_to_delete_list, assets_to_be_updated = filter_assets_and_devices(
+    all_devices,
+    all_assets
+)
 
 # Update TOPdesk
-# update_TOPdesk(devices_to_create_list, assets_to_delete_list, assets_to_be_updated)
+update_TOPdesk(devices_to_create_list, assets_to_delete_list, assets_to_be_updated)
 
-# end_time = time.time()
-# elapsed = end_time - start_time
+end_time = time.time()
+elapsed = end_time - start_time
 
-# print(f"\n[✓] Total time: {elapsed:.2f} seconds")
+print(f"\n[✓] Total time: {elapsed:.2f} seconds")
 
