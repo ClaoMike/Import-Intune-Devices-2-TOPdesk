@@ -124,27 +124,27 @@ azure_devices_fields = {
 }
 
 intune_devices_fields = {
-    "userId": {"type": str, "json_key": "user-id"},
-    "azureADDeviceId": {"type": str, "json_key": "azure-id"},
-    "complianceState": {"type": str, "json_key": "compliance-status"},
-    "deviceName": {"type": str, "json_key": "name-1"},
-    "id": {"type": str, "json_key": "intune-id"},
-    "imei": {"type": str, "json_key": "imei"},
-    "managedDeviceOwnerType": {"type": str, "json_key": "ownership"},
-    "manufacturer": {"type": str, "json_key": "manufacturer-1"},
-    "model": {"type": str, "json_key": "model-1"},
-    "operatingSystem": {"type": str, "json_key": "operating-system"},
-    "osVersion": {"type": str, "json_key": "os-version"},
-    "serialNumber": {"type": str, "json_key": "serial-number"},
-    "subscriberCarrier": {"type": str, "json_key": "subscriber-carrier"},
-    "azureADRegistered": {"type": bool, "json_key": "azure-ad-registered"},
-    "isEncrypted": {"type": bool, "json_key": "encrypted"},
-    "isSupervised": {"type": bool, "json_key": "ismanaged"},
-    "enrolledDateTime": {"type": datetime, "json_key": "enrollment-date"},
-    "lastSyncDateTime": {"type": datetime, "json_key": "last-check-in"},
-    "managementCertificateExpirationDate": {"type": datetime, "json_key": "management-certificate-expiration-date"},
-    "freeStorageSpaceInBytes": {"type": Storage, "json_key": "free-storage"},
-    "totalStorageSpaceInBytes": {"type": Storage, "json_key": "total-storage"},
+    "userId": {"type": str, "json_key": "user-id", "asset_attr": "user_id"},
+    "azureADDeviceId": {"type": str, "json_key": "azure-id", "asset_attr": "azure_id"},
+    "complianceState": {"type": str, "json_key": "compliance-status", "asset_attr": "compliance_status"},
+    "deviceName": {"type": str, "json_key": "name-1", "asset_attr": "name_1"},
+    "id": {"type": str, "json_key": "intune-id", "asset_attr": "intune_id"},
+    "imei": {"type": str, "json_key": "imei", "asset_attr": "imei"},
+    "managedDeviceOwnerType": {"type": str, "json_key": "ownership", "asset_attr": "ownership"},
+    "manufacturer": {"type": str, "json_key": "manufacturer-1", "asset_attr": "manufacturer_1"},
+    "model": {"type": str, "json_key": "model-1", "asset_attr": "model_1"},
+    "operatingSystem": {"type": str, "json_key": "operating-system", "asset_attr": "operating_system"},
+    "osVersion": {"type": str, "json_key": "os-version", "asset_attr": "os_version"},
+    "serialNumber": {"type": str, "json_key": "serial-number", "asset_attr": "serial_number"},
+    "subscriberCarrier": {"type": str, "json_key": "subscriber-carrier", "asset_attr": "subscriber_carrier"},
+    "azureADRegistered": {"type": bool, "json_key": "azure-ad-registered", "asset_attr": "azure_ad_registered"},
+    "isEncrypted": {"type": bool, "json_key": "encrypted", "asset_attr": "encrypted"},
+    "isSupervised": {"type": bool, "json_key": "ismanaged", "asset_attr": "ismanaged"},
+    "enrolledDateTime": {"type": datetime, "json_key": "enrollment-date", "asset_attr": "enrollment_date"},
+    "lastSyncDateTime": {"type": datetime, "json_key": "last-check-in", "asset_attr": "last_check_in"},
+    "managementCertificateExpirationDate": {"type": datetime, "json_key": "management-certificate-expiration-date", "asset_attr": "management_certificate_expiration_date"},
+    "freeStorageSpaceInBytes": {"type": Storage, "json_key": "free-storage", "asset_attr": "free_storage"},
+    "totalStorageSpaceInBytes": {"type": Storage, "json_key": "total-storage", "asset_attr": "total_storage"},
 }
 
 class TOPdeskAsset:
@@ -301,10 +301,6 @@ class IntuneDevice(Device):
         self.warranty_expiration_date: Optional[datetime] = None
         self.number_of_days_left_until_the_warranty_expires: Optional[int] = None
 
-# TODO:
-#  dynamic comparison
-#  make sure the script runs fine
-
     def to_JSON(self):
         json_data = {
             "name": self.topdesk_asset_name,
@@ -338,88 +334,52 @@ class IntuneDevice(Device):
         must_update_user = False
         new_data = {}
 
-        if self.userId != asset.user_id:
-            must_update_user = True
-            new_data["user-id"] = self.userId
+        for attr, meta in intune_devices_fields.items():
+            json_key = meta.get("json_key")
+            asset_attr = meta.get("asset_attr")
 
-        if self.complianceState != asset.compliance_status:
-            new_data["compliance-status"] = self.complianceState
+            if not json_key or not asset_attr:
+                continue
 
-        if self.enrolledDateTime != asset.enrollment_date:
-            new_data["enrollment-date"] = self.enrolledDateTime.strftime("%Y-%m-%dT%H:%M:%S.000Z") if self.enrolledDateTime else None
+            self_value = getattr(self, attr, None)
+            asset_value = getattr(asset, asset_attr, None)
 
-        if self.freeStorageSpaceInBytes != asset.free_storage:
-            new_data["free-storage"] = Storage.bytes_to_topdesk_string_representation(self.freeStorageSpaceInBytes) if self.freeStorageSpaceInBytes else None
+            if isinstance(self_value, datetime) and isinstance(asset_value, datetime):
+                if self_value != asset_value:
+                    new_data[json_key] = self_value.strftime("%Y-%m-%dT%H:%M:%S.000Z")
+            elif isinstance(self_value, Storage) and isinstance(asset_value, Storage):
+                if self_value != asset_value:
+                    new_data[json_key] = Storage.bytes_to_topdesk_string_representation(self_value)
+            else:
+                if self_value != asset_value:
+                    new_data[json_key] = self_value
 
-        if self.totalStorageSpaceInBytes != asset.total_storage:
-            new_data["total-storage"] = Storage.bytes_to_topdesk_string_representation(self.totalStorageSpaceInBytes) if self.totalStorageSpaceInBytes else None
+            if json_key == "user-id" and self_value != asset_value:
+                must_update_user = True
 
-        if self.deviceName != asset.name_1:
-            new_data["name-1"] = self.deviceName
+        # Compare additional fields not in intune_devices_fields
+        extra_fields = {
+            "exposure_level": "exposure-level",
+            "last_ip_address": "last-ip-address",
+            "last_external_ip_address": "last-external-ip-address",
+            "is_in_warranty": "is-in-warranty",
+            "country": "country-warranty",
+            "product_name": "model-provided-by-the-manufacturer",
+            "warranty_expiration_date": "warranty-expiration-date",
+            "number_of_days_left_until_the_warranty_expires": "number-of-days-until-the-warranty-expires",
+            "lenovo_product_webpage_url": "warranty-url"
+        }
 
-        if self.imei != asset.imei:
-            new_data["imei"] = self.imei
+        for attr, json_key in extra_fields.items():
+            self_value = getattr(self, attr, None)
+            asset_value = getattr(asset, json_key.replace("-", "_"), None)
 
-        if self.isEncrypted != asset.encrypted:
-            new_data["encrypted"] = self.isEncrypted
-
-        if self.isSupervised != asset.ismanaged:
-            new_data["ismanaged"] = self.isSupervised
-
-        if self.lastSyncDateTime != asset.last_check_in:
-            new_data["last-check-in"] = self.lastSyncDateTime.strftime("%Y-%m-%dT%H:%M:%S.000Z") if self.lastSyncDateTime else None
-
-        if self.managedDeviceOwnerType != asset.ownership:
-            new_data["ownership"] = self.managedDeviceOwnerType
-
-        if self.managementCertificateExpirationDate != asset.management_certificate_expiration_date:
-            print(f"{asset.name}")
-            new_data["management-certificate-expiration-date"] = self.managementCertificateExpirationDate.strftime("%Y-%m-%dT%H:%M:%S.000Z") if self.managementCertificateExpirationDate else None
-
-        if self.manufacturer != asset.manufacturer_1:
-            new_data["manufacturer-1"] = self.manufacturer
-
-        if self.model != asset.model_1:
-            new_data["model-1"] = self.model
-
-        if self.operatingSystem != asset.operating_system:
-            new_data["operating-system"] = self.operatingSystem
-
-        if self.osVersion != asset.os_version:
-            new_data["os-version"] = self.osVersion
-
-        if self.serialNumber != asset.serial_number:
-            new_data["serial-number"] = self.serialNumber
-
-        if self.subscriberCarrier != asset.subscriber_carrier:
-            new_data["subscriber-carrier"] = self.subscriberCarrier
-
-        if self.exposure_level != asset.exposure_level:
-            new_data["exposure-level"] = self.exposure_level
-
-        if self.last_ip_address != asset.last_ip_address:
-            new_data["last-ip-address"] = self.last_ip_address
-
-        if self.last_external_ip_address != asset.last_external_ip_address:
-            new_data["last-external-ip-address"] = self.last_external_ip_address
-
-        if self.is_in_warranty != asset.is_in_warranty:
-            new_data["is-in-warranty"] = self.is_in_warranty
-
-        if self.country != asset.country_warranty:
-            new_data["country-warranty"] = self.country
-
-        if self.product_name != asset.model_provided_by_the_manufacturer:
-            new_data["model-provided-by-the-manufacturer"] = self.product_name
-
-        if self.warranty_expiration_date != asset.warranty_expiration_date:
-            new_data["warranty-expiration-date"] = self.warranty_expiration_date.strftime("%Y-%m-%dT%H:%M:%S.000Z") if self.warranty_expiration_date else None
-
-        if self.number_of_days_left_until_the_warranty_expires != asset.number_of_days_until_the_warranty_expires:
-            new_data["number-of-days-until-the-warranty-expires"] = self.number_of_days_left_until_the_warranty_expires
-
-        if self.lenovo_product_webpage_url != asset.warranty_url:
-            new_data["warranty-url"] = self.lenovo_product_webpage_url
+            if isinstance(self_value, datetime) and isinstance(asset_value, datetime):
+                if self_value != asset_value:
+                    new_data[json_key] = self_value.strftime("%Y-%m-%dT%H:%M:%S.000Z")
+            else:
+                if self_value != asset_value:
+                    new_data[json_key] = self_value
 
         return must_update_user, new_data if new_data else None
 
