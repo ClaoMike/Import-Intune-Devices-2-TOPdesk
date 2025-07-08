@@ -1073,16 +1073,16 @@ def update_devices_with_lenovo_warranties(devices: dict):
     lenovo_warranties = []
 
     serial_to_device = {
-        device.serial_number: key
+        device.serialNumber: key
         for key, device in devices.items()
-        if hasattr(device, 'serial_number')
+        if hasattr(device, 'serialNumber')
     }
 
     serials = [
-        f"Serial={device.serial_number}"
+        f"Serial={device.serialNumber}"
         for _, device in devices.items()
         if hasattr(device, 'manufacturer') and device.manufacturer == "LENOVO"
-           and hasattr(device, 'serial_number') and device.serial_number is not None
+           and hasattr(device, 'serialNumber') and device.serialNumber is not None
     ]
 
     for batch in chunked(serials, 100):
