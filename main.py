@@ -291,6 +291,8 @@ class IntuneDevice(Device):
         # TODO:
         #  functions for setting the above 2 attributes
         #  make sure the script runs fine
+        #  replace Microsoft Defender attributes with a single attribute of type Microsoft Defender
+        #  make sure the script runs fine
         #  replace the below attributes with a single attribute of type Lenovo
         #  dynamic toJSON() function
         #  make sure the script runs fine
