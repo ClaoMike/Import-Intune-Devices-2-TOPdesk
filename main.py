@@ -125,32 +125,57 @@ azure_devices_fields = {
     "registrationDateTime": datetime,
 }
 
+# intune_devices_fields = {
+#     "userId": str,
+#     "azureADDeviceId": str,  # this will be part of the TOPdesk ID
+#     "complianceState": str,
+#     "deviceName": str,
+#     "id": str,
+#     "imei": str,
+#     "managedDeviceOwnerType": str,
+#     "manufacturer": str,
+#     "model": str,
+#     "operatingSystem": str,
+#     "osVersion": str,
+#     "serialNumber": str,
+#     "subscriberCarrier": str,
+#
+#     "azureADRegistered": bool,
+#     "isEncrypted": bool,
+#     "isSupervised": bool,
+#
+#     "enrolledDateTime": datetime,
+#     "lastSyncDateTime": datetime,
+#     "managementCertificateExpirationDate": datetime,
+#
+#     "freeStorageSpaceInBytes": Storage,
+#     "totalStorageSpaceInBytes": Storage
+# }
+
 intune_devices_fields = {
-    "userId": str,
-    "azureADDeviceId": str,  # this will be part of the TOPdesk ID
-    "complianceState": str,
-    "deviceName": str,
-    "id": str,
-    "imei": str,
-    "managedDeviceOwnerType": str,
-    "manufacturer": str,
-    "model": str,
-    "operatingSystem": str,
-    "osVersion": str,
-    "serialNumber": str,
-    "subscriberCarrier": str,
-
-    "azureADRegistered": bool,
-    "isEncrypted": bool,
-    "isSupervised": bool,
-
-    "enrolledDateTime": datetime,
-    "lastSyncDateTime": datetime,
-    "managementCertificateExpirationDate": datetime,
-
-    "freeStorageSpaceInBytes": Storage,
-    "totalStorageSpaceInBytes": Storage
+    "userId": {"type": str, "json_key": "user-id"},
+    "azureADDeviceId": {"type": str, "json_key": "azure-id"},
+    "complianceState": {"type": str, "json_key": "compliance-status"},
+    "deviceName": {"type": str, "json_key": "name-1"},
+    "id": {"type": str, "json_key": "intune-id"},
+    "imei": {"type": str, "json_key": "imei"},
+    "managedDeviceOwnerType": {"type": str, "json_key": "ownership"},
+    "manufacturer": {"type": str, "json_key": "manufacturer-1"},
+    "model": {"type": str, "json_key": "model-1"},
+    "operatingSystem": {"type": str, "json_key": "operating-system"},
+    "osVersion": {"type": str, "json_key": "os-version"},
+    "serialNumber": {"type": str, "json_key": "serial-number"},
+    "subscriberCarrier": {"type": str, "json_key": "subscriber-carrier"},
+    "azureADRegistered": {"type": bool, "json_key": "azure-ad-registered"},
+    "isEncrypted": {"type": bool, "json_key": "encrypted"},
+    "isSupervised": {"type": bool, "json_key": "ismanaged"},
+    "enrolledDateTime": {"type": datetime, "json_key": "enrollment-date"},
+    "lastSyncDateTime": {"type": datetime, "json_key": "last-check-in"},
+    "managementCertificateExpirationDate": {"type": datetime, "json_key": "management-certificate-expiration-date"},
+    "freeStorageSpaceInBytes": {"type": Storage, "json_key": "free-storage"},
+    "totalStorageSpaceInBytes": {"type": Storage, "json_key": "total-storage"},
 }
+
 
 class TOPdeskAsset:
     def __init__(self, data: dict):
@@ -269,10 +294,9 @@ class IntuneDevice(Device):
     def __init__(self, data: dict):
         super().__init__()
 
-        global intune_devices_fields
-
-        for key, field_type in intune_devices_fields.items():
+        for key, meta in intune_devices_fields.items():
             attr = key.replace('-', '_')
+            field_type = meta["type"]
             raw_value = data.get(key)
 
             if raw_value is None or raw_value == "":
@@ -280,28 +304,25 @@ class IntuneDevice(Device):
             elif field_type is bool:
                 value = str(raw_value).strip().lower() in ("true", "1", "yes", "on")
             elif field_type is datetime:
-                value = datetime.strptime(raw_value, "%Y-%m-%dT%H:%M:%SZ")
+                try:
+                    value = datetime.strptime(raw_value, "%Y-%m-%dT%H:%M:%SZ")
+                except (ValueError, TypeError):
+                    value = None
             elif field_type is Storage:
-                value = int(raw_value)
+                try:
+                    value = int(raw_value)
+                except (ValueError, TypeError):
+                    value = None
             else:
                 try:
                     value = field_type(raw_value)
                 except (ValueError, TypeError):
-                    value = None  # fallback if conversion fails
+                    value = None
 
             setattr(self, attr, value)
 
         self.set_device_type(operating_system=self.operatingSystem)
         self.set_topdesk_asset_name(operating_system=self.operatingSystem, device_id=self.azureADDeviceId)
-
-        # TODO:
-        #  dynamic toJSON() function
-        #  make sure the script runs fine
-        #  dynamic comparison
-        #  make sure the script runs fine
-        #  replace Microsoft Defender attributes with a single attribute of type Microsoft Defender
-        #  make sure the script runs fine
-        #  replace the below attributes with a single attribute of type Lenovo
 
         # Warranty fields (for Lenovo devices only)
         self.is_in_warranty: Optional[str] = None
@@ -311,44 +332,119 @@ class IntuneDevice(Device):
         self.warranty_expiration_date: Optional[datetime] = None
         self.number_of_days_left_until_the_warranty_expires: Optional[int] = None
 
+# class IntuneDevice(Device):
+#     def __init__(self, data: dict):
+#         super().__init__()
+#
+#         global intune_devices_fields
+#
+#         for key, field_type in intune_devices_fields.items():
+#             attr = key.replace('-', '_')
+#             raw_value = data.get(key)
+#
+#             if raw_value is None or raw_value == "":
+#                 value = None
+#             elif field_type is bool:
+#                 value = str(raw_value).strip().lower() in ("true", "1", "yes", "on")
+#             elif field_type is datetime:
+#                 value = datetime.strptime(raw_value, "%Y-%m-%dT%H:%M:%SZ")
+#             elif field_type is Storage:
+#                 value = int(raw_value)
+#             else:
+#                 try:
+#                     value = field_type(raw_value)
+#                 except (ValueError, TypeError):
+#                     value = None  # fallback if conversion fails
+#
+#             setattr(self, attr, value)
+#
+#         self.set_device_type(operating_system=self.operatingSystem)
+#         self.set_topdesk_asset_name(operating_system=self.operatingSystem, device_id=self.azureADDeviceId)
+#
+#         # TODO:
+#         #  dynamic toJSON() function
+#         #  make sure the script runs fine
+#         #  dynamic comparison
+#         #  make sure the script runs fine
+#         #  replace Microsoft Defender attributes with a single attribute of type Microsoft Defender
+#         #  make sure the script runs fine
+#         #  replace the below attributes with a single attribute of type Lenovo
+#
+#         # Warranty fields (for Lenovo devices only)
+#         self.is_in_warranty: Optional[str] = None
+#         self.country: Optional[str] = None
+#         self.lenovo_product_webpage_url: Optional[str] = None
+#         self.product_name: Optional[str] = None
+#         self.warranty_expiration_date: Optional[datetime] = None
+#         self.number_of_days_left_until_the_warranty_expires: Optional[int] = None
+
     def to_JSON(self):
-        return {
-            "name": self.topdesk_asset_name,  # asset id
-            "type_id": Device.get_device_template(self.device_type),  # asset template
-
-            "azure-ad-registered": self.azureADRegistered,
-            "azure-id": self.azureADDeviceId,
-            "compliance-status": self.complianceState,
-            "enrollment-date": self.enrolledDateTime.strftime("%Y-%m-%dT%H:%M:%S.000Z") if self.enrolledDateTime else None,
-            "free-storage": Storage.bytes_to_topdesk_string_representation(self.freeStorageSpaceInBytes) if self.freeStorageSpaceInBytes else None,
-            "total-storage": Storage.bytes_to_topdesk_string_representation(self.totalStorageSpaceInBytes) if self.totalStorageSpaceInBytes else None,
-            "name-1": self.deviceName,
-            "intune-id": self.id,
-            "imei": self.imei,
-            "encrypted": self.isEncrypted,
-            "ismanaged": self.isSupervised,
-            "last-check-in": self.lastSyncDateTime.strftime("%Y-%m-%dT%H:%M:%S.000Z") if self.lastSyncDateTime else None,
-            "ownership": self.managedDeviceOwnerType,
-            "management-certificate-expiration-date": self.managementCertificateExpirationDate.strftime("%Y-%m-%dT%H:%M:%S.000Z") if self.managementCertificateExpirationDate else None,
-            "manufacturer-1": self.manufacturer,
-            "model-1": self.model,
-            "operating-system": self.operatingSystem,
-            "os-version": self.osVersion,
-            "serial-number": self.serialNumber,
-            "subscriber-carrier": self.subscriberCarrier,
-            "user-id": self.userId,
-            "last-ip-address": self.last_ip_address,
-            "exposure-level": self.exposure_level,
-            "last-external-ip-address": self.last_external_ip_address,
-
-            # Warranty fields (for Lenovo devices only)
+        json_data = {
+            "name": self.topdesk_asset_name,
+            "type_id": Device.get_device_template(self.device_type),
+            "last-ip-address": getattr(self, "last_ip_address", None),
+            "exposure-level": getattr(self, "exposure_level", None),
+            "last-external-ip-address": getattr(self, "last_external_ip_address", None),
+            # Warranty fields
             "is-in-warranty": self.is_in_warranty,
             "country-warranty": self.country,
             "model-provided-by-the-manufacturer": self.product_name,
-            "warranty-expiration-date": self.warranty_expiration_date.strftime("%Y-%m-%dT%H:%M:%S.000Z") if self.warranty_expiration_date else None,
+            "warranty-expiration-date": self.warranty_expiration_date.strftime(
+                "%Y-%m-%dT%H:%M:%S.000Z") if self.warranty_expiration_date else None,
             "number-of-days-until-the-warranty-expires": self.number_of_days_left_until_the_warranty_expires,
             "warranty-url": self.lenovo_product_webpage_url,
         }
+
+        for attr, meta in intune_devices_fields.items():
+            value = getattr(self, attr, None)
+            json_key = meta["json_key"]
+            if isinstance(value, datetime):
+                json_data[json_key] = value.strftime("%Y-%m-%dT%H:%M:%S.000Z")
+            elif isinstance(value, Storage):
+                json_data[json_key] = Storage.bytes_to_topdesk_string_representation(value)
+            else:
+                json_data[json_key] = value
+
+        return json_data
+
+    # def to_JSON(self):
+    #     return {
+    #         "name": self.topdesk_asset_name,  # asset id
+    #         "type_id": Device.get_device_template(self.device_type),  # asset template
+    #
+    #         "azure-ad-registered": self.azureADRegistered,
+    #         "azure-id": self.azureADDeviceId,
+    #         "compliance-status": self.complianceState,
+    #         "enrollment-date": self.enrolledDateTime.strftime("%Y-%m-%dT%H:%M:%S.000Z") if self.enrolledDateTime else None,
+    #         "free-storage": Storage.bytes_to_topdesk_string_representation(self.freeStorageSpaceInBytes) if self.freeStorageSpaceInBytes else None,
+    #         "total-storage": Storage.bytes_to_topdesk_string_representation(self.totalStorageSpaceInBytes) if self.totalStorageSpaceInBytes else None,
+    #         "name-1": self.deviceName,
+    #         "intune-id": self.id,
+    #         "imei": self.imei,
+    #         "encrypted": self.isEncrypted,
+    #         "ismanaged": self.isSupervised,
+    #         "last-check-in": self.lastSyncDateTime.strftime("%Y-%m-%dT%H:%M:%S.000Z") if self.lastSyncDateTime else None,
+    #         "ownership": self.managedDeviceOwnerType,
+    #         "management-certificate-expiration-date": self.managementCertificateExpirationDate.strftime("%Y-%m-%dT%H:%M:%S.000Z") if self.managementCertificateExpirationDate else None,
+    #         "manufacturer-1": self.manufacturer,
+    #         "model-1": self.model,
+    #         "operating-system": self.operatingSystem,
+    #         "os-version": self.osVersion,
+    #         "serial-number": self.serialNumber,
+    #         "subscriber-carrier": self.subscriberCarrier,
+    #         "user-id": self.userId,
+    #         "last-ip-address": self.last_ip_address,
+    #         "exposure-level": self.exposure_level,
+    #         "last-external-ip-address": self.last_external_ip_address,
+    #
+    #         # Warranty fields (for Lenovo devices only)
+    #         "is-in-warranty": self.is_in_warranty,
+    #         "country-warranty": self.country,
+    #         "model-provided-by-the-manufacturer": self.product_name,
+    #         "warranty-expiration-date": self.warranty_expiration_date.strftime("%Y-%m-%dT%H:%M:%S.000Z") if self.warranty_expiration_date else None,
+    #         "number-of-days-until-the-warranty-expires": self.number_of_days_left_until_the_warranty_expires,
+    #         "warranty-url": self.lenovo_product_webpage_url,
+    #     }
 
     def compare_to_asset(self, asset: TOPdeskAsset):
         must_update_user = False
