@@ -249,55 +249,77 @@ class IntuneDevice(Device):
         self.asset_id: Optional[str] = None
         self.topdesk_person_card_id: Optional[str] = None
 
+        global intune_devices_fields
+
+        for key, field_type in intune_devices_fields.items():
+            attr = key.replace('-', '_')
+            raw_value = data.get(key)
+
+            if raw_value is None or raw_value == "":
+                value = None
+            elif field_type is bool:
+                value = str(raw_value).strip().lower() in ("true", "1", "yes", "on")
+            elif field_type is datetime:
+                value = datetime.strptime(raw_value, "%Y-%m-%dT%H:%M:%SZ")
+            elif field_type is Storage:
+                value = int(raw_value)
+            else:
+                try:
+                    value = field_type(raw_value)
+                except (ValueError, TypeError):
+                    value = None  # fallback if conversion fails
+
+            setattr(self, attr, value)
+
         # extract relevant data
-        self.azure_ad_device_id: Optional[str] = data.get("azureADDeviceId")  # this will be part of the TOPdesk ID
-        self.compliance_state: Optional[str] = data.get("complianceState")
-        self.device_name: Optional[str] = data.get("deviceName")
-        self.id: Optional[str] = data.get("id")
-        self.imei: Optional[str] = data.get("imei")
-        self.managed_device_owner_type: Optional[str] = data.get("managedDeviceOwnerType")
-        self.manufacturer: Optional[str] = data.get("manufacturer")
-        self.model: Optional[str] = data.get("model")
-        self.operating_system: Optional[str] = data.get("operatingSystem")
-        self.operating_system_version: Optional[str] = data.get("osVersion")
-        self.serial_number: Optional[str] = data.get("serialNumber")
-        self.subscriber_carrier: Optional[str] = data.get("subscriberCarrier")
+        # self.azure_ad_device_id: Optional[str] = data.get("azureADDeviceId")  # this will be part of the TOPdesk ID
+        # self.compliance_state: Optional[str] = data.get("complianceState")
+        # self.device_name: Optional[str] = data.get("deviceName")
+        # self.id: Optional[str] = data.get("id")
+        # self.imei: Optional[str] = data.get("imei")
+        # self.managed_device_owner_type: Optional[str] = data.get("managedDeviceOwnerType")
+        # self.manufacturer: Optional[str] = data.get("manufacturer")
+        # self.model: Optional[str] = data.get("model")
+        # self.operating_system: Optional[str] = data.get("operatingSystem")
+        # self.operating_system_version: Optional[str] = data.get("osVersion")
+        # self.serial_number: Optional[str] = data.get("serialNumber")
+        # self.subscriber_carrier: Optional[str] = data.get("subscriberCarrier")
 
-        self.azure_ad_registered: Optional[bool] = bool(data.get("azureADRegistered"))
-        self.is_encrypted: Optional[bool] = bool(data.get("isEncrypted"))
-        self.is_supervised: Optional[bool] = bool(data.get("isSupervised"))
+        # self.azure_ad_registered: Optional[bool] = bool(data.get("azureADRegistered"))
+        # self.is_encrypted: Optional[bool] = bool(data.get("isEncrypted"))
+        # self.is_supervised: Optional[bool] = bool(data.get("isSupervised"))
 
-        self.enrolled_date_time: Optional[datetime] = (
-            datetime.strptime(
-                data.get("enrolledDateTime"),
-                "%Y-%m-%dT%H:%M:%SZ") if data.get("enrolledDateTime") else None
-        )
-        self.last_sync_date_time: Optional[datetime] = (
-            datetime.strptime(
-                data.get("lastSyncDateTime"),
-                "%Y-%m-%dT%H:%M:%SZ") if data.get("lastSyncDateTime") else None
-        )
-        self.management_certificate_expiration_date: Optional[datetime] = (
-            datetime.strptime(
-                data.get("managementCertificateExpirationDate"),
-                "%Y-%m-%dT%H:%M:%SZ") if data.get("managementCertificateExpirationDate") else None
-        )
+        # self.enrolled_date_time: Optional[datetime] = (
+        #     datetime.strptime(
+        #         data.get("enrolledDateTime"),
+        #         "%Y-%m-%dT%H:%M:%SZ") if data.get("enrolledDateTime") else None
+        # )
+        # self.last_sync_date_time: Optional[datetime] = (
+        #     datetime.strptime(
+        #         data.get("lastSyncDateTime"),
+        #         "%Y-%m-%dT%H:%M:%SZ") if data.get("lastSyncDateTime") else None
+        # )
+        # self.management_certificate_expiration_date: Optional[datetime] = (
+        #     datetime.strptime(
+        #         data.get("managementCertificateExpirationDate"),
+        #         "%Y-%m-%dT%H:%M:%SZ") if data.get("managementCertificateExpirationDate") else None
+        # )
 
-        self.free_storage: Optional[int] = int(data.get("freeStorageSpaceInBytes")) if data.get("freeStorageSpaceInBytes") else None
-        self.total_storage: Optional[int] = int(data.get("totalStorageSpaceInBytes")) if data.get("totalStorageSpaceInBytes") else None
+        # self.free_storage: Optional[int] = int(data.get("freeStorageSpaceInBytes")) if data.get("freeStorageSpaceInBytes") else None
+        # self.total_storage: Optional[int] = int(data.get("totalStorageSpaceInBytes")) if data.get("totalStorageSpaceInBytes") else None
 
         # assigning user
-        self.user_id = data.get("userId") if data.get("userId") != "" else None
+        # self.user_id = data.get("userId") if data.get("userId") != "" else None
 
         # device type
         self.device_type: Optional[Device.Type] = Device.get_device_type(
-            operating_system=self.operating_system
+            operating_system=self.operatingSystem
         )
 
         # compute the topdesk asset name
         self.topdesk_asset_name = Device.compute_topdesk_asset_name(
-            os=self.operating_system,
-            device_id=self.azure_ad_device_id
+            os=self.operatingSystem,
+            device_id=self.azureADDeviceId
         )
 
         # Microsoft Defender values
@@ -318,27 +340,27 @@ class IntuneDevice(Device):
             "name": self.topdesk_asset_name,  # asset id
             "type_id": Device.get_device_template(self.device_type),  # asset template
 
-            "azure-ad-registered": self.azure_ad_registered,
-            "azure-id": self.azure_ad_device_id,
-            "compliance-status": self.compliance_state,
-            "enrollment-date": self.enrolled_date_time.strftime("%Y-%m-%dT%H:%M:%S.000Z") if self.enrolled_date_time else None,
-            "free-storage": Storage.bytes_to_topdesk_string_representation(self.free_storage) if self.free_storage else None,
-            "total-storage": Storage.bytes_to_topdesk_string_representation(self.total_storage) if self.total_storage else None,
-            "name-1": self.device_name,
+            "azure-ad-registered": self.azureADRegistered,
+            "azure-id": self.azureADDeviceId,
+            "compliance-status": self.complianceState,
+            "enrollment-date": self.enrolledDateTime.strftime("%Y-%m-%dT%H:%M:%S.000Z") if self.enrolledDateTime else None,
+            "free-storage": Storage.bytes_to_topdesk_string_representation(self.freeStorageSpaceInBytes) if self.freeStorageSpaceInBytes else None,
+            "total-storage": Storage.bytes_to_topdesk_string_representation(self.totalStorageSpaceInBytes) if self.totalStorageSpaceInBytes else None,
+            "name-1": self.deviceName,
             "intune-id": self.id,
             "imei": self.imei,
-            "encrypted": self.is_encrypted,
-            "ismanaged": self.is_supervised,
-            "last-check-in": self.last_sync_date_time.strftime("%Y-%m-%dT%H:%M:%S.000Z") if self.last_sync_date_time else None,
-            "ownership": self.managed_device_owner_type,
-            "management-certificate-expiration-date": self.management_certificate_expiration_date.strftime("%Y-%m-%dT%H:%M:%S.000Z") if self.management_certificate_expiration_date else None,
+            "encrypted": self.isEncrypted,
+            "ismanaged": self.isSupervised,
+            "last-check-in": self.lastSyncDateTime.strftime("%Y-%m-%dT%H:%M:%S.000Z") if self.lastSyncDateTime else None,
+            "ownership": self.managedDeviceOwnerType,
+            "management-certificate-expiration-date": self.managementCertificateExpirationDate.strftime("%Y-%m-%dT%H:%M:%S.000Z") if self.managementCertificateExpirationDate else None,
             "manufacturer-1": self.manufacturer,
             "model-1": self.model,
-            "operating-system": self.operating_system,
-            "os-version": self.operating_system_version,
-            "serial-number": self.serial_number,
-            "subscriber-carrier": self.subscriber_carrier,
-            "user-id": self.user_id,
+            "operating-system": self.operatingSystem,
+            "os-version": self.osVersion,
+            "serial-number": self.serialNumber,
+            "subscriber-carrier": self.subscriberCarrier,
+            "user-id": self.userId,
             "last-ip-address": self.last_ip_address,
             "exposure-level": self.exposure_level,
             "last-external-ip-address": self.last_external_ip_address,
@@ -356,43 +378,43 @@ class IntuneDevice(Device):
         must_update_user = False
         new_data = {}
 
-        if self.user_id != asset.user_id:
+        if self.userId != asset.user_id:
             must_update_user = True
-            new_data["user-id"] = self.user_id
+            new_data["user-id"] = self.userId
 
-        if self.compliance_state != asset.compliance_status:
-            new_data["compliance-status"] = self.compliance_state
+        if self.complianceState != asset.compliance_status:
+            new_data["compliance-status"] = self.complianceState
 
-        if self.enrolled_date_time != asset.enrollment_date:
-            new_data["enrollment-date"] = self.enrolled_date_time.strftime("%Y-%m-%dT%H:%M:%S.000Z") if self.enrolled_date_time else None
+        if self.enrolledDateTime != asset.enrollment_date:
+            new_data["enrollment-date"] = self.enrolledDateTime.strftime("%Y-%m-%dT%H:%M:%S.000Z") if self.enrolledDateTime else None
 
-        if self.free_storage != asset.free_storage:
-            new_data["free-storage"] = Storage.bytes_to_topdesk_string_representation(self.free_storage) if self.free_storage else None
+        if self.freeStorageSpaceInBytes != asset.free_storage:
+            new_data["free-storage"] = Storage.bytes_to_topdesk_string_representation(self.freeStorageSpaceInBytes) if self.freeStorageSpaceInBytes else None
 
-        if self.total_storage != asset.total_storage:
-            new_data["total-storage"] = Storage.bytes_to_topdesk_string_representation(self.total_storage) if self.total_storage else None
+        if self.totalStorageSpaceInBytes != asset.total_storage:
+            new_data["total-storage"] = Storage.bytes_to_topdesk_string_representation(self.totalStorageSpaceInBytes) if self.totalStorageSpaceInBytes else None
 
-        if self.device_name != asset.name_1:
-            new_data["name-1"] = self.device_name
+        if self.deviceName != asset.name_1:
+            new_data["name-1"] = self.deviceName
 
         if self.imei != asset.imei:
             new_data["imei"] = self.imei
 
-        if self.is_encrypted != asset.encrypted:
-            new_data["encrypted"] = self.is_encrypted
+        if self.isEncrypted != asset.encrypted:
+            new_data["encrypted"] = self.isEncrypted
 
-        if self.is_supervised != asset.ismanaged:
-            new_data["ismanaged"] = self.is_supervised
+        if self.isSupervised != asset.ismanaged:
+            new_data["ismanaged"] = self.isSupervised
 
-        if self.last_sync_date_time != asset.last_check_in:
-            new_data["last-check-in"] = self.last_sync_date_time.strftime("%Y-%m-%dT%H:%M:%S.000Z") if self.last_sync_date_time else None
+        if self.lastSyncDateTime != asset.last_check_in:
+            new_data["last-check-in"] = self.lastSyncDateTime.strftime("%Y-%m-%dT%H:%M:%S.000Z") if self.lastSyncDateTime else None
 
-        if self.managed_device_owner_type != asset.ownership:
-            new_data["ownership"] = self.managed_device_owner_type
+        if self.managedDeviceOwnerType != asset.ownership:
+            new_data["ownership"] = self.managedDeviceOwnerType
 
-        if self.management_certificate_expiration_date != asset.management_certificate_expiration_date:
+        if self.managementCertificateExpirationDate != asset.management_certificate_expiration_date:
             print(f"{asset.name}")
-            new_data["management-certificate-expiration-date"] = self.management_certificate_expiration_date.strftime("%Y-%m-%dT%H:%M:%S.000Z") if self.management_certificate_expiration_date else None
+            new_data["management-certificate-expiration-date"] = self.managementCertificateExpirationDate.strftime("%Y-%m-%dT%H:%M:%S.000Z") if self.managementCertificateExpirationDate else None
 
         if self.manufacturer != asset.manufacturer_1:
             new_data["manufacturer-1"] = self.manufacturer
@@ -400,17 +422,17 @@ class IntuneDevice(Device):
         if self.model != asset.model_1:
             new_data["model-1"] = self.model
 
-        if self.operating_system != asset.operating_system:
-            new_data["operating-system"] = self.operating_system
+        if self.operatingSystem != asset.operating_system:
+            new_data["operating-system"] = self.operatingSystem
 
-        if self.operating_system_version != asset.os_version:
-            new_data["os-version"] = self.operating_system_version
+        if self.osVersion != asset.os_version:
+            new_data["os-version"] = self.osVersion
 
-        if self.serial_number != asset.serial_number:
-            new_data["serial-number"] = self.serial_number
+        if self.serialNumber != asset.serial_number:
+            new_data["serial-number"] = self.serialNumber
 
-        if self.subscriber_carrier != asset.subscriber_carrier:
-            new_data["subscriber-carrier"] = self.subscriber_carrier
+        if self.subscriberCarrier != asset.subscriber_carrier:
+            new_data["subscriber-carrier"] = self.subscriberCarrier
 
         if self.exposure_level != asset.exposure_level:
             new_data["exposure-level"] = self.exposure_level
@@ -1144,10 +1166,10 @@ def fetch_devices_and_assets_in_parallel():
         devices = device_future.result()
 
     # sync with Microsoft Defender
-    update_devices_with_microsoft_defender_data(devices)
+    # update_devices_with_microsoft_defender_data(devices)
 
     # sync with Lenovo Warranties
-    update_devices_with_lenovo_warranties(devices)
+    # update_devices_with_lenovo_warranties(devices)
 
     # Transforming the assets into dictionary as well
     all_assets_as_dict = {}
@@ -1176,22 +1198,22 @@ def update_TOPdesk(to_create_list, to_delete_list, to_update_list):
             except Exception as e:
                 print(f"[✗] {label} task failed: {e}")
 
-start_time = time.time()
+# start_time = time.time()
 
 # Fetch devices and assets
 all_devices, all_assets = fetch_devices_and_assets_in_parallel()
 
 # Filter to-dos
-devices_to_create_list, assets_to_delete_list, assets_to_be_updated = filter_assets_and_devices(
-    all_devices,
-    all_assets
-)
+# devices_to_create_list, assets_to_delete_list, assets_to_be_updated = filter_assets_and_devices(
+#     all_devices,
+#     all_assets
+# )
 
 # Update TOPdesk
-update_TOPdesk(devices_to_create_list, assets_to_delete_list, assets_to_be_updated)
+# update_TOPdesk(devices_to_create_list, assets_to_delete_list, assets_to_be_updated)
 
-end_time = time.time()
-elapsed = end_time - start_time
+# end_time = time.time()
+# elapsed = end_time - start_time
 
-print(f"\n[✓] Total time: {elapsed:.2f} seconds")
+# print(f"\n[✓] Total time: {elapsed:.2f} seconds")
 
