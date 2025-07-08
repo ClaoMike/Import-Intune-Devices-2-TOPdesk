@@ -288,6 +288,14 @@ class IntuneDevice(Device):
             device_id=self.azureADDeviceId
         )
 
+        # TODO:
+        #  functions for setting the above 2 attributes
+        #  make sure the script runs fine
+        #  replace the below attributes with a single attribute of type Lenovo
+        #  dynamic toJSON() function
+        #  make sure the script runs fine
+        #  dynamic comparison
+
         # Warranty fields (for Lenovo devices only)
         self.is_in_warranty: Optional[str] = None
         self.country: Optional[str] = None
