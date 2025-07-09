@@ -54,12 +54,17 @@ mobile_os = {
 class Storage:
     @staticmethod
     def topdesk_bytes_representation_to_gb_mb_bytes(topdesk_display_value):
-        values = [int(re.sub(r'\D', '', part)) for part in topdesk_display_value.split(' ')]
-        gb = values[0]
-        mb = values[1]
-        by = values[2]
+        try:
+            values = [int(re.sub(r'\D', '', part)) for part in topdesk_display_value.split(' ')]
+            gb = values[0]
+            mb = values[1]
+            by = values[2]
 
-        return (gb * (1024 ** 3)) + (mb * (1024 ** 2)) + by
+            return (gb * (1024 ** 3)) + (mb * (1024 ** 2)) + by
+        except Exception as e:
+            print(f"Could not transform {topdesk_display_value} into a number: {e}")
+        else:
+            return None
 
     @staticmethod
     def bytes_to_topdesk_string_representation(bytes_value):
@@ -180,7 +185,7 @@ class Device:
         MOBILE = "MOBILE"
         DEVICE = "DEVICE"
 
-    def __init__(self):
+    def __init__(self, data: dict):
         self.user_id: Optional[str] = None
         self.topdesk_asset_name: Optional[str] = None
         self.asset_id: Optional[str] = None
@@ -193,6 +198,38 @@ class Device:
         self.last_ip_address: Optional[str] = None  # "last-ip-address"
         self.exposure_level: Optional[str] = None  # "exposure-level"
         self.last_external_ip_address: Optional[str] = None  # "last-external-ip-address"
+
+        if isinstance(self, IntuneDevice):
+            comparison_fields = intune_devices_fields
+        else:
+            comparison_fields = azure_devices_fields
+
+        for key, meta in comparison_fields.items():
+            attr = key.replace('-', '_')
+            field_type = meta["type"]
+            raw_value = data.get(key)
+
+            if raw_value is None or raw_value == "":
+                value = None
+            elif field_type is bool:
+                value = str(raw_value).strip().lower() in ("true", "1", "yes", "on")
+            elif field_type is datetime:
+                try:
+                    value = datetime.strptime(raw_value, "%Y-%m-%dT%H:%M:%SZ")
+                except (ValueError, TypeError):
+                    value = None
+            elif field_type is Storage:
+                try:
+                    value = int(raw_value)
+                except (ValueError, TypeError):
+                    value = None
+            else:
+                try:
+                    value = field_type(raw_value)
+                except (ValueError, TypeError):
+                    value = None
+
+            setattr(self, attr, value)
 
     def set_device_type(self, operating_system: str):
         self.device_type: Optional[Device.Type] = Device.get_device_type(
@@ -240,6 +277,7 @@ class Device:
         for attr, meta in comparison_fields.items():
             json_key = meta.get("json_key")
             asset_attr = meta.get("asset_attr")
+            type = meta.get("type")
 
             if not json_key or not asset_attr:
                 continue
@@ -250,9 +288,9 @@ class Device:
             if isinstance(self_value, datetime) and isinstance(asset_value, datetime):
                 if self_value != asset_value:
                     new_data[json_key] = self_value.strftime("%Y-%m-%dT%H:%M:%S.000Z")
-            elif isinstance(self_value, Storage) and isinstance(asset_value, Storage):
+            elif type is Storage:
                 if self_value != asset_value:
-                    new_data[json_key] = Storage.bytes_to_topdesk_string_representation(self_value)
+                    new_data[json_key] = Storage.bytes_to_topdesk_string_representation(self_value) if self_value else None
             else:
                 if self_value != asset_value:
                     new_data[json_key] = self_value
@@ -260,7 +298,7 @@ class Device:
             if json_key == "user-id" and self_value != asset_value:
                 must_update_user = True
 
-        return must_update_user, new_data if new_data else None
+        return must_update_user, new_data
 
     def create_in_TOPdesk(self):
         response = requests.post(
@@ -315,34 +353,7 @@ class Device:
 
 class IntuneDevice(Device):
     def __init__(self, data: dict):
-        super().__init__()
-
-        for key, meta in intune_devices_fields.items():
-            attr = key.replace('-', '_')
-            field_type = meta["type"]
-            raw_value = data.get(key)
-
-            if raw_value is None or raw_value == "":
-                value = None
-            elif field_type is bool:
-                value = str(raw_value).strip().lower() in ("true", "1", "yes", "on")
-            elif field_type is datetime:
-                try:
-                    value = datetime.strptime(raw_value, "%Y-%m-%dT%H:%M:%SZ")
-                except (ValueError, TypeError):
-                    value = None
-            elif field_type is Storage:
-                try:
-                    value = int(raw_value)
-                except (ValueError, TypeError):
-                    value = None
-            else:
-                try:
-                    value = field_type(raw_value)
-                except (ValueError, TypeError):
-                    value = None
-
-            setattr(self, attr, value)
+        super().__init__(data)
 
         self.set_device_type(operating_system=self.operatingSystem)
         self.set_topdesk_asset_name(operating_system=self.operatingSystem, device_id=self.azureADDeviceId)
@@ -414,34 +425,7 @@ class IntuneDevice(Device):
 
 class AzureDevice(Device):
     def __init__(self, data: dict):
-        super().__init__()
-
-        for key, meta in azure_devices_fields.items():
-            attr = key.replace('-', '_')
-            field_type = meta["type"]
-            raw_value = data.get(key)
-
-            if raw_value is None or raw_value == "":
-                value = None
-            elif field_type is bool:
-                value = str(raw_value).strip().lower() in ("true", "1", "yes", "on")
-            elif field_type is datetime:
-                try:
-                    value = datetime.strptime(raw_value, "%Y-%m-%dT%H:%M:%SZ")
-                except (ValueError, TypeError):
-                    value = None
-            elif field_type is Storage:
-                try:
-                    value = int(raw_value)
-                except (ValueError, TypeError):
-                    value = None
-            else:
-                try:
-                    value = field_type(raw_value)
-                except (ValueError, TypeError):
-                    value = None
-
-            setattr(self, attr, value)
+        super().__init__(data)
 
         self.set_device_type(operating_system=self.operatingSystem)
         self.set_topdesk_asset_name(operating_system=self.operatingSystem, device_id=self.deviceId)
